@@ -1,16 +1,35 @@
 import json
+import time
 
 class User:
-    DEFAULT_LISTS = [
-        {
-            'name': 'Party',
-            'items': [
-                'Booze',
-                'Phone Charger',
-                'Oyster Card'
-            ]
-        }
-    ]
+    STATE_VERSION = 1
+
+    @staticmethod
+    def genDefaultState():
+        return {
+        'updatedAt': time.time(),
+        'version': User.STATE_VERSION,
+        'lists': [
+            {
+                'name': 'Party',
+                'items': [
+                    'Booze',
+                    'Phone Charger',
+                    'Oyster Card'
+                ]
+            },
+            {
+                'name': 'Sleeping Over',
+                'items': [
+                    'Toothbrush',
+                    'Hair tie',
+                    'Comb',
+                    'Progesterone'
+                ]
+            }
+        ]  
+    }
+    
 
     def __init__(self, user_uuid):
         self.uuid = user_uuid
@@ -22,4 +41,4 @@ class User:
         if raw_user_data:
             return raw_user_data
         else:
-            return json.dumps(User.DEFAULT_LISTS)
+            return json.dumps(User.genDefaultState())

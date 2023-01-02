@@ -10,6 +10,10 @@ main {
   max-width: 1200px;
 }
 
+#lists {
+  max-width: 40em;
+}
+
 footer a {
   margin: .5rem;
 }
