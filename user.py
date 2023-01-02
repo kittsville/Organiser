@@ -29,6 +29,22 @@ class User:
                     'Comb',
                     'Progesterone'
                 ]
+            },
+            {
+                'name': 'Bike Trip',
+                'id': str(uuid.uuid4()),
+                'items': [
+                    'Flapjacks',
+                    'Sandwich',
+                    '2 x Water bottle',
+                    'Wallet',
+                    'Check tyre pressure',
+                    'Keys',
+                    'Jumper',
+                    'Rain jacket',
+                    'GT85',
+                    'Bike Multitool'
+                ]
             }
         ]  
     }

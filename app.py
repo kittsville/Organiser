@@ -2,6 +2,7 @@ import os
 import web
 import uuid
 import redis
+import time
 
 from user import User
 
@@ -9,8 +10,9 @@ urls = (
     '/lists/(.+)', 'list_management',
     '/(.*)', 'homepage'
 )
-render = web.template.render('templates/')
-app = web.application(urls, globals())
+cacheBust   = int(time.time())
+render      = web.template.render('templates/')
+app         = web.application(urls, globals())
 
 redis_url = os.getenv('REDIS_URL', 'redis://localhost:6379')
 r = redis.from_url(redis_url, decode_responses=True)
@@ -21,7 +23,7 @@ class homepage:
         if not raw_uuid:
             raise web.found(f'/{uuid.uuid4()}')
             
-        return render.homepage()
+        return render.homepage(cacheBust)
 
 class list_management:
     def GET(self, raw_uuid):
