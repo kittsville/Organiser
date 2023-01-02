@@ -2,6 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=360px, initial-scale=1">
     <title>Organiser</title>
 
     <meta name="author" content="Kit Maywood">
@@ -31,10 +32,18 @@
     <main>
       <h1 class="mdc-typography mdc-typography--headline1">Organiser</h1>
 
-      <p>Compile a packing checklist from the activities below:</p>
+      <p>Make a checklist by selecting activities:</p>
 
       <div id="lists">Loading...</div>
     </main>
+
+    <div id="copy-checklist" hidden>
+      <button class="mdc-fab mdc-fab--extended">
+        <div class="mdc-fab__ripple"></div>
+        <span class="material-icons mdc-fab__icon">content_copy</span>
+        <span class="mdc-fab__label">Copy Checklist</span>
+      </button>
+    </div>
 
     <footer>
       <a href="/privacy">Privacy Policy</a>

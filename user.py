@@ -1,5 +1,6 @@
 import json
 import time
+import uuid
 
 class User:
     STATE_VERSION = 1
@@ -11,7 +12,8 @@ class User:
         'version': User.STATE_VERSION,
         'lists': [
             {
-                'name': 'Party',
+                'name': 'Partying',
+                'id': str(uuid.uuid4()),
                 'items': [
                     'Booze',
                     'Phone Charger',
@@ -20,6 +22,7 @@ class User:
             },
             {
                 'name': 'Sleeping Over',
+                'id': str(uuid.uuid4()),
                 'items': [
                     'Toothbrush',
                     'Hair tie',
