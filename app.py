@@ -8,7 +8,7 @@ from user import User
 
 urls = (
     '/lists/(.+)', 'list_management',
-    '/(.*)', 'homepage'
+    '/([0-9a-z\-]*)', 'homepage'
 )
 cacheBust   = int(time.time())
 render      = web.template.render('templates/')
