@@ -22,12 +22,20 @@ const handleNewUserState = user => {
     switchToListMode();
 };
 
+const cancelEditWithEscape = e => {
+    if(e.key === "Escape") {
+        cancel.click();
+    }
+};
+
 const switchToListMode = () => {
     editorButtonsEl.hidden = true;
     editableActivitiesWrapperEl.hidden = true;
 
     listsWrapperEl.hidden = false;
     editWrapperEl.hidden = false;
+
+    document.body.removeEventListener('keyup', cancelEditWithEscape);
 };
 
 const deselectAllActivities = () =>
@@ -79,6 +87,8 @@ editEl.addEventListener('click', () => {
     editorButtonsEl.hidden = false;
     editableActivitiesEl.value = activitiesAsText;
     editableActivitiesWrapperEl.hidden = false;
+
+    document.body.addEventListener('keyup', cancelEditWithEscape);
 });
 
 makeChecklistEl.addEventListener('click', () => {
