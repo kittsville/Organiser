@@ -66,10 +66,18 @@ class User:
         
         parsed_body = json.loads(raw_body)
 
+        raw_previous_user_data = r.get(self.redis_key)
+
+        if raw_previous_user_data:
+            previous_state = json.loads(raw_previous_user_data)
+
+            if parsed_body['previousUpdatedAt'] != previous_state['updatedAt']:
+                raise web.badrequest('List of activities has since been updated, please reload')
+
         state = {
             'updatedAt': time.time(),
             'version': User.STATE_VERSION,
-            'lists': parsed_body
+            'lists': parsed_body['activities']
         }
 
         raw_state = json.dumps(state)

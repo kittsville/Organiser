@@ -61,11 +61,16 @@ saveEl.addEventListener('click', () => {
         return activity;
     });
 
+    const payload = {
+        activities,
+        previousUpdatedAt: userState['updatedAt']
+    }
+
     fetch(
         `/lists/${user_uuid}`,
         {
             method: 'POST',
-            body: JSON.stringify(activities)
+            body: JSON.stringify(payload)
         })
         .then(response => {
             if (response.ok) {
