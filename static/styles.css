@@ -25,6 +25,10 @@ main {
   right: 5%;
 }
 
+#editable-activities-wrapper {
+  margin-bottom: 0.5em;
+}
+
 footer a {
   margin: .5rem;
 }

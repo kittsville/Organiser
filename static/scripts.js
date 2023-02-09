@@ -1,5 +1,12 @@
 const listsWrapperEl = document.getElementById('lists');
 const makeChecklistEl = document.getElementById('copy-checklist');
+const editEl = document.getElementById('edit');
+const editWrapperEl = document.getElementById('edit-wrapper');
+const editableActivitiesEl = document.getElementById('editable-activities');
+const editableActivitiesWrapperEl = document.getElementById('editable-activities-wrapper');
+const editorButtonsEl = document.getElementById('editor-buttons');
+const cancelEl = document.getElementById('cancel');
+const saveEl = document.getElementById('save');
 
 let userState = null;
 const selectedListItems = new Set();
@@ -7,8 +14,74 @@ const selectedListItems = new Set();
 const path = new URL(location).pathname;
 const user_uuid = path.substring(path.indexOf('/') + 1);
 
+const handleServerError = error => alert(`Updating activity list failed: ${error}`);
+const handleNewUserState = user => {
+    userState = user;
+    renderListsSummary(user.lists);
+    switchToListMode();
+};
+
+const switchToListMode = () => {
+    editorButtonsEl.hidden = true;
+    editableActivitiesWrapperEl.hidden = true;
+
+    listsWrapperEl.hidden = false;
+    editWrapperEl.hidden = false;
+};
+
+const deselectAllActivities = () =>
+    Array.from(document.getElementsByClassName('selected')).forEach(onListItemClick);
+
+cancelEl.addEventListener('click', switchToListMode);
+
+saveEl.addEventListener('click', () => {
+    rawActivities = editableActivitiesEl.value.trim().split('\n\n');
+
+    const activities = rawActivities.map(rawItems => {
+        const parsedItems = rawItems.trim().split('\n');
+        if (parsedItems.length < 2) {
+            const error = `Activity list has too few items: ${rawItems}`;
+            alert(error);
+            throw error;
+        }
+        const activity = {
+            name: parsedItems[0],
+            items: parsedItems.slice(1)
+        }
+
+        return activity;
+    });
+
+    fetch(
+        `/lists/${user_uuid}`,
+        {
+            method: 'POST',
+            body: JSON.stringify(activities)
+        })
+        .then(response => {
+            if (response.ok) {
+                response.json().then(handleNewUserState);
+            } else {
+                response.text().then(handleServerError).catch(handleServerError);
+            }
+        })
+        .catch(handleServerError);
+});
+
+editEl.addEventListener('click', () => {
+    deselectAllActivities();
+    listsWrapperEl.hidden = true;
+    editWrapperEl.hidden = true;
+
+    const activitiesAsText = userState.lists.map(item => item.name + '\n' + item.items.join('\n')).join('\n\n');
+
+    editorButtonsEl.hidden = false;
+    editableActivitiesEl.value = activitiesAsText;
+    editableActivitiesWrapperEl.hidden = false;
+});
+
 makeChecklistEl.addEventListener('click', () => {
-    const checklistItems = userState.lists.flatMap(list => selectedListItems.has(list.id) ? list.items : []);
+    const checklistItems = userState.lists.flatMap(list => selectedListItems.has(list.name) ? list.items : []);
     const checklistText = checklistItems.join('\n');
 
     navigator.clipboard.writeText(checklistText);
@@ -33,7 +106,7 @@ const renderListsSummary = (listItems) => {
         const tabindex = i === 0 ? 'tabindex="0"' :'';
         
         // FIXME: HTML injection, oh no
-        return `<li class="mdc-list-item" ${tabindex} x-id="${item.id}">
+        return `<li class="mdc-list-item" ${tabindex} x-id="${item.name}">
             <span class="mdc-list-item__ripple"></span>
             <span class="mdc-list-item__text">
                 <span class="mdc-list-item__primary-text">${item.name}</span>
@@ -56,10 +129,7 @@ const renderListsSummary = (listItems) => {
 
 fetch(`/lists/${user_uuid}`)
     .then(response => response.json())
-    .then(user => {
-        userState = user;
-        renderListsSummary(user.lists);
-    });
+    .then(handleNewUserState);
 
 
 // Initialises Material Design Components

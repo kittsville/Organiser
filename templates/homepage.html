@@ -37,13 +37,38 @@ $def with (cacheBust)
 
       <div id="lists">Loading...</div>
 
-      <button class="mdc-button mdc-button--icon-leading">
-        <span class="mdc-button__ripple"></span>
-        <i class="material-icons mdc-button__icon" aria-hidden="true"
-          >add</i
-        >
-        <span class="mdc-button__label">Add Activity</span>
-      </button>
+      <div id="editable-activities-wrapper" hidden="true">
+        <label class="mdc-text-field mdc-text-field--outlined mdc-text-field--textarea mdc-text-field--no-label">
+          <span class="mdc-notched-outline">
+            <span class="mdc-notched-outline__leading"></span>
+            <span class="mdc-notched-outline__trailing"></span>
+          </span>
+          <span class="mdc-text-field__resizer">
+            <textarea id="editable-activities" class="mdc-text-field__input" rows="16" cols="40" aria-label="Label"></textarea>
+          </span>
+        </label>
+      </div>
+
+      <div id="edit-wrapper">
+        <button id="edit" class="mdc-button mdc-button--icon-leading">
+          <span class="mdc-button__ripple"></span>
+          <i class="material-icons mdc-button__icon" aria-hidden="true">edit</i>
+          <span class="mdc-button__label">Edit Activities</span>
+        </button>
+      </div>
+
+      <div id="editor-buttons" hidden="true">
+        <button id="save" class="mdc-button mdc-button--icon-leading">
+          <span class="mdc-button__ripple"></span>
+          <i class="material-icons mdc-button__icon" aria-hidden="true">save</i>
+          <span class="mdc-button__label">Save</span>
+        </button>
+        <button id="cancel" class="mdc-button mdc-button--icon-leading">
+          <span class="mdc-button__ripple"></span>
+          <i class="material-icons mdc-button__icon" aria-hidden="true">close</i>
+          <span class="mdc-button__label">Cancel</span>
+        </button>
+      </div>
     </main>
 
     <div id="copy-checklist" hidden>

@@ -1,9 +1,10 @@
+import web
 import json
 import time
-import uuid
 
 class User:
     STATE_VERSION = 1
+    STATE_EXPIRY_SECONDS = 30 * 24 * 60 * 60
 
     @staticmethod
     def genDefaultState():
@@ -13,7 +14,6 @@ class User:
         'lists': [
             {
                 'name': 'Partying',
-                'id': str(uuid.uuid4()),
                 'items': [
                     'Booze',
                     'Phone Charger',
@@ -22,7 +22,6 @@ class User:
             },
             {
                 'name': 'Sleeping Over',
-                'id': str(uuid.uuid4()),
                 'items': [
                     'Toothbrush',
                     'Hair tie',
@@ -32,7 +31,6 @@ class User:
             },
             {
                 'name': 'Bike Trip',
-                'id': str(uuid.uuid4()),
                 'items': [
                     'Flapjacks',
                     'Sandwich',
@@ -61,3 +59,24 @@ class User:
             return raw_user_data
         else:
             return json.dumps(User.genDefaultState())
+    
+    def save_lists(self, r, raw_body):
+        if len(raw_body) > 20000:
+            return web.badrequest('List of activities too large')
+        
+        parsed_body = json.loads(raw_body)
+
+        state = {
+            'updatedAt': time.time(),
+            'version': User.STATE_VERSION,
+            'lists': parsed_body
+        }
+
+        raw_state = json.dumps(state)
+
+        success = r.setex(self.redis_key, User.STATE_EXPIRY_SECONDS, raw_state)
+
+        if success:
+            return raw_state
+        else:
+            return web.internalerror()

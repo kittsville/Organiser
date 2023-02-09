@@ -6,6 +6,12 @@ import time
 
 from user import User
 
+def parseUUID(raw_uuid):
+    try:
+        return uuid.UUID(raw_uuid, version=4)
+    except ValueError:
+        raise web.badrequest('Invalid UUID')
+
 urls = (
     '/lists/(.+)', 'list_management',
     '/([0-9a-z\-]*)', 'homepage'
@@ -27,11 +33,19 @@ class homepage:
 
 class list_management:
     def GET(self, raw_uuid):
-        user_uuid = uuid.UUID(raw_uuid, version=4)
+        user_uuid = parseUUID(raw_uuid)
 
         user = User(user_uuid)
 
         return user.get_lists(r)
+    
+    def POST(self, raw_uuid):
+        user_uuid = parseUUID(raw_uuid)
+
+        user = User(user_uuid)
+
+        raw_body = web.data()
+        return user.save_lists(r, raw_body)
 
 if __name__ == "__main__":
     app.run()
