@@ -1,4 +1,5 @@
 const listsWrapperEl = document.getElementById('lists');
+const listItemTemplateEl = document.getElementById('template');
 const makeChecklistEl = document.getElementById('copy-checklist');
 const editEl = document.getElementById('edit');
 const editWrapperEl = document.getElementById('edit-wrapper');
@@ -104,21 +105,23 @@ const onListItemClick = listItemEl => {
 const renderListsSummary = (listItems) => {
     const listItemEls = listItems.map((item, i) => {
         const tabindex = i === 0 ? 'tabindex="0"' :'';
+
+        const listItemEl = listItemTemplateEl.content.cloneNode(true).querySelector('li');
+        if (i === 0) {listItemEl.tabIndex = 0;}
+        listItemEl.setAttribute('x-id', item.name);
+
+        listItemEl.querySelector('.mdc-list-item__primary-text').textContent = item.name;
+        listItemEl.querySelector('.mdc-list-item__secondary-text').textContent = item.items.join(', ');
         
-        // FIXME: HTML injection, oh no
-        return `<li class="mdc-list-item" ${tabindex} x-id="${item.name}">
-            <span class="mdc-list-item__ripple"></span>
-            <span class="mdc-list-item__text">
-                <span class="mdc-list-item__primary-text">${item.name}</span>
-                <span class="mdc-list-item__secondary-text">${item.items.join(', ')}</span>
-            </span>
-        </li>`
-    }).join('');
+        return listItemEl;
+    });
 
-    const listEl = `<ul class="mdc-list mdc-list--two-line">${listItemEls}</ul>`;
+    const listEl = document.createElement('ul');
+    listEl.classList.add('mdc-list', 'mdc-list--two-line');
+    listItemEls.forEach(el => listEl.appendChild(el));
 
-    listsWrapperEl.innerHTML = listEl;
-
+    listsWrapperEl.innerHTML = '';
+    listsWrapperEl.appendChild(listEl);
     const list = new mdc.list.MDCList(listsWrapperEl.firstElementChild);
     list.listElements.forEach(mdc.ripple.MDCRipple.attachTo);
 
