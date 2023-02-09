@@ -11,7 +11,7 @@ class User:
         return {
         'updatedAt': time.time(),
         'version': User.STATE_VERSION,
-        'lists': [
+        'activities': [
             {
                 'name': 'Partying',
                 'items': [
@@ -52,7 +52,7 @@ class User:
         self.uuid = user_uuid
         self.redis_key = f'Organiser:{user_uuid}'
 
-    def get_lists(self, r):
+    def get_activities(self, r):
         raw_user_data = r.get(self.redis_key)
 
         if raw_user_data:
@@ -60,7 +60,7 @@ class User:
         else:
             return json.dumps(User.genDefaultState())
     
-    def save_lists(self, r, raw_body):
+    def update_activities(self, r, raw_body):
         if len(raw_body) > 20000:
             return web.badrequest('List of activities too large')
         
@@ -77,7 +77,7 @@ class User:
         state = {
             'updatedAt': time.time(),
             'version': User.STATE_VERSION,
-            'lists': parsed_body['activities']
+            'activities': parsed_body['activities']
         }
 
         raw_state = json.dumps(state)

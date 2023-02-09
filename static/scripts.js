@@ -18,7 +18,7 @@ const user_uuid = path.substring(path.indexOf('/') + 1);
 const handleServerError = error => alert(`Updating activity list failed: ${error}`);
 const handleNewUserState = user => {
     userState = user;
-    renderListsSummary(user.lists);
+    renderListsSummary(user.activities);
     switchToListMode();
 };
 
@@ -63,11 +63,11 @@ saveEl.addEventListener('click', () => {
 
     const payload = {
         activities,
-        previousUpdatedAt: userState['updatedAt']
+        previousUpdatedAt: userState.updatedAt
     }
 
     fetch(
-        `/lists/${user_uuid}`,
+        `/activities/${user_uuid}`,
         {
             method: 'POST',
             body: JSON.stringify(payload)
@@ -87,7 +87,7 @@ editEl.addEventListener('click', () => {
     listsWrapperEl.hidden = true;
     editWrapperEl.hidden = true;
 
-    const activitiesAsText = userState.lists.map(item => item.name + '\n' + item.items.join('\n')).join('\n\n');
+    const activitiesAsText = userState.activities.map(item => item.name + '\n' + item.items.join('\n')).join('\n\n');
 
     editorButtonsEl.hidden = false;
     editableActivitiesEl.value = activitiesAsText;
@@ -97,7 +97,7 @@ editEl.addEventListener('click', () => {
 });
 
 makeChecklistEl.addEventListener('click', () => {
-    const checklistItems = userState.lists.flatMap(list => selectedListItems.has(list.name) ? list.items : []);
+    const checklistItems = userState.activities.flatMap(list => selectedListItems.has(list.name) ? list.items : []);
     const checklistText = checklistItems.join('\n');
 
     navigator.clipboard.writeText(checklistText);
@@ -145,7 +145,7 @@ const renderListsSummary = (listItems) => {
     );
 }
 
-fetch(`/lists/${user_uuid}`)
+fetch(`/activities/${user_uuid}`)
     .then(response => response.json())
     .then(handleNewUserState);
 
