@@ -12,8 +12,9 @@ const saveEl = document.getElementById('save');
 let userState = null;
 const selectedListItems = new Set();
 
-const path = new URL(location).pathname;
-const user_uuid = path.substring(path.indexOf('/') + 1);
+const url = new URL(location);
+const encryption_key = url.searchParams.get('key');
+const user_uuid = url.pathname.substring(url.pathname.indexOf('/') + 1);
 
 const handleServerError = error => alert(`Updating activity list failed: ${error}`);
 const handleNewUserState = user => {
@@ -67,7 +68,7 @@ saveEl.addEventListener('click', () => {
     }
 
     fetch(
-        `/activities/${user_uuid}`,
+        `/activities/${user_uuid}?key=${encryption_key}`,
         {
             method: 'POST',
             body: JSON.stringify(payload)
@@ -105,7 +106,7 @@ makeChecklistEl.addEventListener('click', () => {
 
 const onListItemClick = listItemEl => {
     const itemId = listItemEl.getAttribute('x-id');
-    
+
     if (selectedListItems.has(itemId)) {
         listItemEl.classList.remove('selected');
         selectedListItems.delete(itemId);
@@ -127,7 +128,7 @@ const renderListsSummary = (listItems) => {
 
         listItemEl.querySelector('.mdc-list-item__primary-text').textContent = item.name;
         listItemEl.querySelector('.mdc-list-item__secondary-text').textContent = item.items.join(', ');
-        
+
         return listItemEl;
     });
 
@@ -145,7 +146,7 @@ const renderListsSummary = (listItems) => {
     );
 }
 
-fetch(`/activities/${user_uuid}`)
+fetch(`/activities/${user_uuid}?key=${encryption_key}`)
     .then(response => response.json())
     .then(handleNewUserState);
 

@@ -5,26 +5,38 @@ import binascii
 import json
 import time
 
-class UserId:
-    def __init__(self, user_uuid: uuid.UUID):
+from cryptography.fernet import Fernet
+
+class UserKey:
+    def __init__(self, user_uuid: uuid.UUID, encryption_key: bytes):
         self.uuid = user_uuid
+        self.fernet = Fernet(encryption_key)
+        self.encryption_key = encryption_key
 
     @staticmethod
     def random():
-        return UserId(uuid.uuid4())
+        return UserKey(uuid.uuid4(), Fernet.generate_key())
 
     @staticmethod
-    def fromBase64String(base64_encoded_uuid):
+    def from_base64_strings(uuid_base64, raw_encryption_key):
         try:
-            padded_base64 = f'{base64_encoded_uuid}=='
-            decoded_bytes = base64.urlsafe_b64decode(padded_base64)
+            uuid_base64_padded = f'{uuid_base64}=='
+            uuid_bytes = base64.urlsafe_b64decode(uuid_base64_padded)
 
-            return UserId(uuid.UUID(bytes=decoded_bytes, version=4))
-        except (ValueError, binascii.Error):
-            raise web.badrequest('Invalid UUID')
+            encryption_key = f'{raw_encryption_key}='.encode('utf8')
 
-    def toBase64String(self):
+            if len(encryption_key) != 44:
+                raise web.badrequest('Invalid encryption key')
+
+            return UserKey(uuid.UUID(bytes=uuid_bytes, version=4), encryption_key)
+        except (ValueError, binascii.Error) as e:
+            raise web.badrequest(f'Invalid user key: {e}')
+
+    def base64_uuid(self):
         return base64.urlsafe_b64encode(self.uuid.bytes).decode('utf8').rstrip('=\n')
+
+    def base64_encrpytion_key(self):
+        return self.encryption_key.decode('utf8').rstrip('=\n')
 
 class User:
     STATE_VERSION = 1
@@ -72,27 +84,31 @@ class User:
     }
 
 
-    def __init__(self, user_uuid):
-        self.uuid = user_uuid
-        self.redis_key = f'Organiser:{user_uuid}'
+    def __init__(self, user_key: UserKey):
+        self.key = user_key
+        self.redis_key = f'Organiser:{user_key.uuid}'
+
+        print(self.redis_key)
 
     def get_activities(self, r):
-        raw_user_data = r.get(self.redis_key)
+        encrypted_user_data = r.get(self.redis_key)
 
-        if raw_user_data:
+        if encrypted_user_data:
+            raw_user_data = self.key.fernet.decrypt(encrypted_user_data)
             return raw_user_data
         else:
             return json.dumps(User.genDefaultState())
 
-    def update_activities(self, r, raw_body):
+    def update_activities(self, r, raw_body: str):
         if len(raw_body) > 20000:
             return web.badrequest('List of activities too large')
 
         parsed_body = json.loads(raw_body)
 
-        raw_previous_user_data = r.get(self.redis_key)
+        encrypted_previous_user_data = r.get(self.redis_key)
 
-        if raw_previous_user_data:
+        if encrypted_previous_user_data:
+            raw_previous_user_data = self.key.fernet.decrypt(encrypted_previous_user_data)
             previous_state = json.loads(raw_previous_user_data)
 
             if parsed_body['previousUpdatedAt'] != previous_state['updatedAt']:
@@ -106,7 +122,9 @@ class User:
 
         raw_state = json.dumps(state)
 
-        success = r.setex(self.redis_key, User.STATE_EXPIRY_SECONDS, raw_state)
+        encrypted_raw_state = self.key.fernet.encrypt(raw_state.encode())
+
+        success = r.setex(self.redis_key, User.STATE_EXPIRY_SECONDS, encrypted_raw_state)
 
         if success:
             return raw_state

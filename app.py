@@ -3,10 +3,10 @@ import web
 import redis
 import time
 
-from user import User, UserId
+from user import User, UserKey
 
 urls = (
-    '/activities/(.+)', 'api',
+    '/activities/([0-9a-zA-Z\-\_]{22})', 'api',
     '/health', 'health',
     '/([0-9a-zA-Z\-\_]{22}){0,1}', 'homepage'
 )
@@ -15,7 +15,7 @@ render      = web.template.render('templates/')
 app         = web.application(urls, globals())
 
 redis_url = os.getenv('REDIS_URL', 'redis://localhost:6379')
-r = redis.from_url(redis_url, decode_responses=True)
+r = redis.from_url(redis_url)
 r.ping()
 
 class health:
@@ -28,23 +28,25 @@ class health:
 class homepage:
     def GET(self, raw_uuid):
         if not raw_uuid:
-            user_id = UserId.random()
-            raise web.found(f'/{user_id.toBase64String()}')
+            user_key = UserKey.random()
+            raise web.found(f'/{user_key.base64_uuid()}?key={user_key.base64_encrpytion_key()}')
 
         return render.homepage(cacheBust)
 
 class api:
     def GET(self, raw_uuid):
-        user_id = UserId.fromBase64String(raw_uuid)
+        raw_encryption_key = web.input().key
+        user_key = UserKey.from_base64_strings(raw_uuid, raw_encryption_key)
 
-        user = User(user_id)
+        user = User(user_key)
 
         return user.get_activities(r)
 
     def POST(self, raw_uuid):
-        user_id = UserId.fromBase64String(raw_uuid)
+        raw_encryption_key = web.input().key
+        user_key = UserKey.from_base64_strings(raw_uuid, raw_encryption_key)
 
-        user = User(user_id)
+        user = User(user_key)
 
         raw_body = web.data()
         return user.update_activities(r, raw_body)
