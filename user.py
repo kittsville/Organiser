@@ -88,8 +88,6 @@ class User:
         self.key = user_key
         self.redis_key = f'Organiser:{user_key.uuid}'
 
-        print(self.redis_key)
-
     def get_activities(self, r):
         encrypted_user_data = r.get(self.redis_key)
 
