@@ -1,21 +1,29 @@
 import os
 import web
 import uuid
+import binascii
+import base64
 import redis
 import time
 
 from user import User
 
-def parseUUID(raw_uuid):
+def parseUUID(base64_encoded_uuid):
     try:
-        return uuid.UUID(raw_uuid, version=4)
-    except ValueError:
+        padded_base64 = f'{base64_encoded_uuid}=='
+        decoded_bytes = base64.urlsafe_b64decode(padded_base64)
+
+        return uuid.UUID(bytes=decoded_bytes, version=4)
+    except (ValueError, binascii.Error):
         raise web.badrequest('Invalid UUID')
+
+def encodeUUID(u):
+    return base64.urlsafe_b64encode(u.bytes).decode('utf8').rstrip('=\n')
 
 urls = (
     '/activities/(.+)', 'api',
     '/health', 'health',
-    '/([0-9a-z\-]*)', 'homepage'
+    '/([0-9a-zA-Z\-\_]{22}){0,1}', 'homepage'
 )
 cacheBust   = int(time.time())
 render      = web.template.render('templates/')
@@ -35,7 +43,8 @@ class health:
 class homepage:
     def GET(self, raw_uuid):
         if not raw_uuid:
-            raise web.found(f'/{uuid.uuid4()}')
+            user_id = encodeUUID(uuid.uuid4())
+            raise web.found(f'/{user_id}')
             
         return render.homepage(cacheBust)
 
