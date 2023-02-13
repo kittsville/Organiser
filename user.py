@@ -1,6 +1,30 @@
 import web
+import uuid
+import base64
+import binascii
 import json
 import time
+
+class UserId:
+    def __init__(self, user_uuid: uuid.UUID):
+        self.uuid = user_uuid
+
+    @staticmethod
+    def random():
+        return UserId(uuid.uuid4())
+
+    @staticmethod
+    def fromBase64String(base64_encoded_uuid):
+        try:
+            padded_base64 = f'{base64_encoded_uuid}=='
+            decoded_bytes = base64.urlsafe_b64decode(padded_base64)
+
+            return UserId(uuid.UUID(bytes=decoded_bytes, version=4))
+        except (ValueError, binascii.Error):
+            raise web.badrequest('Invalid UUID')
+
+    def toBase64String(self):
+        return base64.urlsafe_b64encode(self.uuid.bytes).decode('utf8').rstrip('=\n')
 
 class User:
     STATE_VERSION = 1
@@ -44,9 +68,9 @@ class User:
                     'Bike Multitool'
                 ]
             }
-        ]  
+        ]
     }
-    
+
 
     def __init__(self, user_uuid):
         self.uuid = user_uuid
@@ -59,11 +83,11 @@ class User:
             return raw_user_data
         else:
             return json.dumps(User.genDefaultState())
-    
+
     def update_activities(self, r, raw_body):
         if len(raw_body) > 20000:
             return web.badrequest('List of activities too large')
-        
+
         parsed_body = json.loads(raw_body)
 
         raw_previous_user_data = r.get(self.redis_key)

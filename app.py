@@ -1,24 +1,9 @@
 import os
 import web
-import uuid
-import binascii
-import base64
 import redis
 import time
 
-from user import User
-
-def parseUUID(base64_encoded_uuid):
-    try:
-        padded_base64 = f'{base64_encoded_uuid}=='
-        decoded_bytes = base64.urlsafe_b64decode(padded_base64)
-
-        return uuid.UUID(bytes=decoded_bytes, version=4)
-    except (ValueError, binascii.Error):
-        raise web.badrequest('Invalid UUID')
-
-def encodeUUID(u):
-    return base64.urlsafe_b64encode(u.bytes).decode('utf8').rstrip('=\n')
+from user import User, UserId
 
 urls = (
     '/activities/(.+)', 'api',
@@ -43,23 +28,23 @@ class health:
 class homepage:
     def GET(self, raw_uuid):
         if not raw_uuid:
-            user_id = encodeUUID(uuid.uuid4())
-            raise web.found(f'/{user_id}')
-            
+            user_id = UserId.random()
+            raise web.found(f'/{user_id.toBase64String()}')
+
         return render.homepage(cacheBust)
 
 class api:
     def GET(self, raw_uuid):
-        user_uuid = parseUUID(raw_uuid)
+        user_id = UserId.fromBase64String(raw_uuid)
 
-        user = User(user_uuid)
+        user = User(user_id)
 
         return user.get_activities(r)
-    
-    def POST(self, raw_uuid):
-        user_uuid = parseUUID(raw_uuid)
 
-        user = User(user_uuid)
+    def POST(self, raw_uuid):
+        user_id = UserId.fromBase64String(raw_uuid)
+
+        user = User(user_id)
 
         raw_body = web.data()
         return user.update_activities(r, raw_body)
