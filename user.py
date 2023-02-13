@@ -40,7 +40,7 @@ class UserKey:
 
 class User:
     STATE_VERSION = 1
-    STATE_EXPIRY_SECONDS = 30 * 24 * 60 * 60
+    STATE_EXPIRY_SECONDS = 180 * 24 * 60 * 60
 
     @staticmethod
     def genDefaultState():
