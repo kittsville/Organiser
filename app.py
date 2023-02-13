@@ -6,12 +6,16 @@ import time
 from user import User, UserKey
 
 urls = (
-    '/activities/([0-9a-zA-Z\-\_]{22})', 'api',
+    '/api/activities/([0-9a-zA-Z\-\_]{22})', 'api',
     '/health', 'health',
-    '/([0-9a-zA-Z\-\_]{22}){0,1}', 'homepage'
+    '/([0-9a-zA-Z\-\_]{22})', 'activities',
+    '/new', 'new_user',
+    '/', 'homepage'
 )
-cacheBust   = int(time.time())
-render      = web.template.render('templates/')
+global_vars = {
+    'cacheBust' : str(int(time.time()))
+}
+templates   = web.template.render('templates/', base='layout', globals=global_vars)
 app         = web.application(urls, globals())
 
 redis_url = os.getenv('REDIS_URL', 'redis://localhost:6379')
@@ -26,12 +30,20 @@ class health:
             return web.internalerror()
 
 class homepage:
-    def GET(self, raw_uuid):
-        if not raw_uuid:
-            user_key = UserKey.random()
-            raise web.found(f'/{user_key.base64_uuid()}?key={user_key.base64_encrpytion_key()}')
+    def GET(self):
+        return templates.homepage()
 
-        return render.homepage(cacheBust)
+class new_user:
+    def GET(self):
+        user_key = UserKey.random()
+        raise web.found(f'/{user_key.base64_uuid()}?key={user_key.base64_encrpytion_key()}')
+
+class activities:
+    def GET(self, raw_uuid):
+        raw_encryption_key = web.input().key
+        user_key = UserKey.from_base64_strings(raw_uuid, raw_encryption_key)
+
+        return templates.activities(user_key.uuid)
 
 class api:
     def GET(self, raw_uuid):

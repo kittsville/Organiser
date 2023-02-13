@@ -68,7 +68,7 @@ saveEl.addEventListener('click', () => {
     }
 
     fetch(
-        `/activities/${user_uuid}?key=${encryption_key}`,
+        `/api/activities/${user_uuid}?key=${encryption_key}`,
         {
             method: 'POST',
             body: JSON.stringify(payload)
@@ -146,12 +146,13 @@ const renderListsSummary = (listItems) => {
     );
 }
 
-fetch(`/activities/${user_uuid}?key=${encryption_key}`)
-    .then(response => response.json())
-    .then(handleNewUserState);
+addEventListener('DOMContentLoaded', () => {
+    fetch(`/api/activities/${user_uuid}?key=${encryption_key}`)
+        .then(response => response.json())
+        .then(handleNewUserState);
 
-
-// Initialises Material Design Components
-// See: https://github.com/material-components/material-components-web#javascript
-Array.from(document.getElementsByClassName('mdc-text-field')).forEach(mdc.textField.MDCTextField.attachTo);
-Array.from(document.getElementsByTagName('button')).forEach(mdc.iconButton.MDCIconButtonToggle.attachTo);
+    // Initialises Material Design Components
+    // See: https://github.com/material-components/material-components-web#javascript
+    Array.from(document.getElementsByClassName('mdc-text-field')).forEach(mdc.textField.MDCTextField.attachTo);
+    Array.from(document.getElementsByTagName('button')).forEach(mdc.iconButton.MDCIconButtonToggle.attachTo);
+});

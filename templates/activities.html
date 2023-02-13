@@ -1,0 +1,58 @@
+$def with (user_uuid)
+<p>Make a checklist by selecting activities:</p>
+
+<div id="lists">Loading activities for user $user_uuid...</div>
+
+<div id="editable-activities-wrapper" hidden="true">
+  <label class="mdc-text-field mdc-text-field--outlined mdc-text-field--textarea mdc-text-field--no-label">
+    <span class="mdc-notched-outline">
+      <span class="mdc-notched-outline__leading"></span>
+      <span class="mdc-notched-outline__trailing"></span>
+    </span>
+    <span class="mdc-text-field__resizer">
+      <textarea id="editable-activities" class="mdc-text-field__input" rows="16" cols="40" aria-label="Label"></textarea>
+    </span>
+  </label>
+</div>
+
+<div id="edit-wrapper">
+  <button id="edit" class="mdc-button mdc-button--icon-leading">
+    <span class="mdc-button__ripple"></span>
+    <i class="material-icons mdc-button__icon" aria-hidden="true">edit</i>
+    <span class="mdc-button__label">Edit Activities</span>
+  </button>
+</div>
+
+<div id="editor-buttons" hidden="true">
+  <button id="save" class="mdc-button mdc-button--icon-leading">
+    <span class="mdc-button__ripple"></span>
+    <i class="material-icons mdc-button__icon" aria-hidden="true">save</i>
+    <span class="mdc-button__label">Save</span>
+  </button>
+  <button id="cancel" class="mdc-button mdc-button--icon-leading">
+    <span class="mdc-button__ripple"></span>
+    <i class="material-icons mdc-button__icon" aria-hidden="true">close</i>
+    <span class="mdc-button__label">Cancel</span>
+  </button>
+</div>
+</main>
+
+<div id="copy-checklist" hidden>
+<button class="mdc-fab mdc-fab--extended">
+  <div class="mdc-fab__ripple"></div>
+  <span class="material-icons mdc-fab__icon">content_copy</span>
+  <span class="mdc-fab__label">Copy Checklist</span>
+</button>
+</div>
+
+<template id="template">
+<li class="mdc-list-item">
+  <span class="mdc-list-item__ripple"></span>
+  <span class="mdc-list-item__text">
+      <span class="mdc-list-item__primary-text"></span>
+      <span class="mdc-list-item__secondary-text"></span>
+  </span>
+</li>
+</template>
+
+<script defer src="/static/scripts.js?v=$cacheBust"></script>
