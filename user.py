@@ -6,6 +6,7 @@ import json
 import time
 
 from cryptography.fernet import Fernet
+from redis.client import Redis
 
 class UserKey:
     def __init__(self, user_uuid: uuid.UUID, encryption_key: bytes):
@@ -84,12 +85,13 @@ class User:
     }
 
 
-    def __init__(self, user_key: UserKey):
+    def __init__(self, r: "Redis[bytes]", user_key: UserKey):
+        self.r = r
         self.key = user_key
         self.redis_key = f'Organiser:{user_key.uuid}'
 
-    def get_activities(self, r):
-        encrypted_user_data = r.get(self.redis_key)
+    def get_activities(self):
+        encrypted_user_data = self.r.get(self.redis_key)
 
         if encrypted_user_data:
             raw_user_data = self.key.fernet.decrypt(encrypted_user_data)
@@ -97,13 +99,13 @@ class User:
         else:
             return json.dumps(User.genDefaultState())
 
-    def update_activities(self, r, raw_body: str):
+    def update_activities(self, raw_body: str):
         if len(raw_body) > 20000:
             return web.badrequest('List of activities too large')
 
         parsed_body = json.loads(raw_body)
 
-        encrypted_previous_user_data = r.get(self.redis_key)
+        encrypted_previous_user_data = self.r.get(self.redis_key)
 
         if encrypted_previous_user_data:
             raw_previous_user_data = self.key.fernet.decrypt(encrypted_previous_user_data)
@@ -122,7 +124,7 @@ class User:
 
         encrypted_raw_state = self.key.fernet.encrypt(raw_state.encode())
 
-        success = r.setex(self.redis_key, User.STATE_EXPIRY_SECONDS, encrypted_raw_state)
+        success = self.r.setex(self.redis_key, User.STATE_EXPIRY_SECONDS, encrypted_raw_state)
 
         if success:
             return raw_state

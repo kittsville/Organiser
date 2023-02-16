@@ -50,18 +50,18 @@ class api:
         raw_encryption_key = web.input().key
         user_key = UserKey.from_base64_strings(raw_uuid, raw_encryption_key)
 
-        user = User(user_key)
+        user = User(r, user_key)
 
-        return user.get_activities(r)
+        return user.get_activities()
 
     def POST(self, raw_uuid):
         raw_encryption_key = web.input().key
         user_key = UserKey.from_base64_strings(raw_uuid, raw_encryption_key)
 
-        user = User(user_key)
+        user = User(r, user_key)
 
         raw_body = web.data()
-        return user.update_activities(r, raw_body)
+        return user.update_activities(raw_body)
 
 if __name__ == "__main__":
     app.run()
