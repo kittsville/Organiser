@@ -92,6 +92,7 @@ class User:
 
         if encrypted_user_data:
             raw_user_data = self.key.fernet.decrypt(encrypted_user_data)
+            self.r.expire(self.redis_key, User.STATE_EXPIRY_SECONDS)
             return raw_user_data
         else:
             return json.dumps(User.genDefaultState())
