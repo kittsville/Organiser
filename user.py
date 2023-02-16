@@ -50,11 +50,23 @@ class User:
         'version': User.STATE_VERSION,
         'activities': [
             {
-                'name': 'Partying',
+                'name': 'Cycling',
                 'items': [
-                    'Booze',
-                    'Phone Charger',
-                    'Oyster Card'
+                    'D Lock',
+                    'D Lock keys',
+                    'Water bottle',
+                    'Helmet',
+                    'Snack bars',
+                    'Sunglasses?'
+                ]
+            },
+            {
+                'name': 'Bouldering',
+                'items': [
+                    'Chalk Bag',
+                    'Water Bottle',
+                    'Hair Tie',
+                    'Padlock'
                 ]
             },
             {
@@ -63,22 +75,8 @@ class User:
                     'Toothbrush',
                     'Hair tie',
                     'Comb',
-                    'Progesterone'
-                ]
-            },
-            {
-                'name': 'Bike Trip',
-                'items': [
-                    'Flapjacks',
-                    'Sandwich',
-                    '2 x Water bottle',
-                    'Wallet',
-                    'Check tyre pressure',
-                    'Keys',
-                    'Jumper',
-                    'Rain jacket',
-                    'GT85',
-                    'Bike Multitool'
+                    'Progesterone',
+                    'Fresh underwear'
                 ]
             }
         ]
