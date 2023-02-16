@@ -1,9 +1,9 @@
 $def with (user_uuid)
-<p>Make a checklist by selecting activities:</p>
+<p id="help-text" hidden>Make a checklist by selecting activities:</p>
 
 <div id="lists">Loading activities for user $user_uuid...</div>
 
-<div id="editable-activities-wrapper" hidden="true">
+<div id="editable-activities-wrapper" hidden>
   <label class="mdc-text-field mdc-text-field--outlined mdc-text-field--textarea mdc-text-field--no-label">
     <span class="mdc-notched-outline">
       <span class="mdc-notched-outline__leading"></span>
@@ -15,7 +15,7 @@ $def with (user_uuid)
   </label>
 </div>
 
-<div id="edit-wrapper">
+<div id="edit-wrapper" hidden>
   <button id="edit" class="mdc-button mdc-button--icon-leading">
     <span class="mdc-button__ripple"></span>
     <i class="material-icons mdc-button__icon" aria-hidden="true">edit</i>
@@ -23,7 +23,7 @@ $def with (user_uuid)
   </button>
 </div>
 
-<div id="editor-buttons" hidden="true">
+<div id="editor-buttons" hidden>
   <button id="save" class="mdc-button mdc-button--icon-leading">
     <span class="mdc-button__ripple"></span>
     <i class="material-icons mdc-button__icon" aria-hidden="true">save</i>

@@ -5,6 +5,7 @@ const editEl = document.getElementById('edit');
 const editWrapperEl = document.getElementById('edit-wrapper');
 const editableActivitiesEl = document.getElementById('editable-activities');
 const editableActivitiesWrapperEl = document.getElementById('editable-activities-wrapper');
+const helpTextEl = document.getElementById('help-text');
 const editorButtonsEl = document.getElementById('editor-buttons');
 const cancelEl = document.getElementById('cancel');
 const saveEl = document.getElementById('save');
@@ -33,6 +34,7 @@ const switchToListMode = () => {
     editorButtonsEl.hidden = true;
     editableActivitiesWrapperEl.hidden = true;
 
+    helpTextEl.hidden = false;
     listsWrapperEl.hidden = false;
     editWrapperEl.hidden = false;
 
@@ -87,6 +89,7 @@ editEl.addEventListener('click', () => {
     deselectAllActivities();
     listsWrapperEl.hidden = true;
     editWrapperEl.hidden = true;
+    helpTextEl.hidden = true;
 
     const activitiesAsText = userState.activities.map(item => item.name + '\n' + item.items.join('\n')).join('\n\n');
 
