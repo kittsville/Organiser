@@ -75,7 +75,6 @@ class User:
                     'Toothbrush',
                     'Hair tie',
                     'Comb',
-                    'Progesterone',
                     'Fresh underwear'
                 ]
             }
