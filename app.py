@@ -15,8 +15,12 @@ urls = (
 global_vars = {
     'cacheBust' : str(int(time.time()))
 }
-templates   = web.template.render('templates/', base='layout', globals=global_vars)
-app         = web.application(urls, globals())
+templates       = web.template.render('templates/', base='layout', globals=global_vars)
+app             = web.application(urls, globals())
+app.notfound    = lambda: web.notfound(templates.not_found())
+
+if not web.config.debug:
+    app.internalerror = lambda: web.internalerror(templates.internal_error())
 
 redis_url = os.getenv('REDIS_URL', 'redis://localhost:6379')
 r = redis.from_url(redis_url)
