@@ -101,8 +101,9 @@ editEl.addEventListener('click', () => {
 });
 
 makeChecklistEl.addEventListener('click', () => {
-    const checklistItems = userState.activities.flatMap(list => selectedListItems.has(list.name) ? list.items : []);
-    const checklistText = checklistItems.join('\n');
+    const checklistItems        = userState.activities.flatMap(list => selectedListItems.has(list.name) ? list.items : []);
+    const dedupedChecklistItems = [...new Set(checklistItems)];
+    const checklistText         = dedupedChecklistItems.join('\n');
 
     navigator.clipboard.writeText(checklistText);
 })
