@@ -41,16 +41,18 @@ $def with (content)
     <link rel="shortcut icon" href="/static/favicons/favicon.ico">
   </head>
   <body class="mdc-typography">
-    <main>
+    <div class="spacer">
       <h1 class="mdc-typography mdc-typography--headline1">Organiser</h1>
 
-      $:content
-    </main>
+      <main>
+        $:content
+      </main>
 
-    <footer>
-      <a href="https://github.com/kittsville/Organiser">Report a Bug</a>
-    </footer>
+      <script defer src="/static/material-components-web.min.js"></script>
 
-    <script defer src="/static/material-components-web.min.js"></script>
+      <footer>
+        <a href="https://github.com/kittsville/Organiser">Report a Bug</a>
+      </footer>
+    </div>
   </body>
 </html>
