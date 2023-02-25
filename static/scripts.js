@@ -11,6 +11,7 @@ const cancelEl = document.getElementById('cancel');
 const saveEl = document.getElementById('save');
 
 let userState = null;
+let previousActivityText = null;
 const selectedListItems = new Set();
 
 const url = new URL(location);
@@ -44,7 +45,14 @@ const switchToListMode = () => {
 const deselectAllActivities = () =>
     Array.from(document.getElementsByClassName('selected')).forEach(onListItemClick);
 
-cancelEl.addEventListener('click', switchToListMode);
+cancelEl.addEventListener('click', () => {
+    const newActivitiesText = editableActivitiesEl.value.trim();
+    const confirmDiscard = () => confirm("You have unsaved changes. Are you sure you want to discard them?");
+
+    if (newActivitiesText == previousActivityText || confirmDiscard()) {
+        switchToListMode();
+    }
+});
 
 saveEl.addEventListener('click', () => {
     rawActivities = editableActivitiesEl.value.trim().split('\n\n');
@@ -93,6 +101,7 @@ editEl.addEventListener('click', () => {
 
     const activitiesAsText = userState.activities.map(item => item.name + '\n' + item.items.join('\n')).join('\n\n');
 
+    previousActivityText = activitiesAsText;
     editorButtonsEl.hidden = false;
     editableActivitiesEl.value = activitiesAsText;
     editableActivitiesWrapperEl.hidden = false;
