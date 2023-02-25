@@ -26,7 +26,7 @@ const handleNewUserState = user => {
 
 const cancelEditWithEscape = e => {
     if(e.key === "Escape") {
-        cancel.click();
+        cancelEl.click();
     }
 };
 
