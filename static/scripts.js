@@ -150,9 +150,31 @@ const renderListsSummary = (listItems) => {
     );
 }
 
+const renderLoadError = (message) => {
+    const metaEl = document.createElement('meta');
+    metaEl.name = 'robots';
+    metaEl.content = 'noindex';
+    document.head.appendChild(metaEl);
+
+    listsWrapperEl.textContent = message;
+}
+
 addEventListener('DOMContentLoaded', () => {
     fetch(`/api/activities/${user_uuid}?key=${encryption_key}`)
-        .then(response => response.json())
+        .then(response => {
+            if (response.status == 200) {
+                return response.json();
+
+            }
+
+            if (response.status == 404) {
+                renderLoadError('User  not found');
+            } else {
+                renderLoadError(`HTTP ${response.status} (an error occurred)`);
+            }
+
+            throw new Error('No Activities returned by server');
+        })
         .then(handleNewUserState);
 
     // Initialises Material Design Components
