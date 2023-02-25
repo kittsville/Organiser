@@ -87,15 +87,23 @@ class User:
         self.key = user_key
         self.redis_key = f'Organiser:{user_key.uuid}'
 
+    def setup_first_activities(self):
+        raw_state           = json.dumps(User.genDefaultState())
+        encrypted_raw_state = self.key.fernet.encrypt(raw_state.encode())
+        success             = self.r.setex(self.redis_key, User.STATE_EXPIRY_SECONDS, encrypted_raw_state)
+
+        if not success:
+            raise web.internalerror()
+
     def get_activities(self):
         encrypted_user_data = self.r.get(self.redis_key)
 
-        if encrypted_user_data:
-            raw_user_data = self.key.fernet.decrypt(encrypted_user_data)
-            self.r.expire(self.redis_key, User.STATE_EXPIRY_SECONDS)
-            return raw_user_data
-        else:
-            return json.dumps(User.genDefaultState())
+        if encrypted_user_data is None:
+            raise web.notfound()
+
+        raw_user_data = self.key.fernet.decrypt(encrypted_user_data)
+        self.r.expire(self.redis_key, User.STATE_EXPIRY_SECONDS)
+        return raw_user_data
 
     def update_activities(self, raw_body: str):
         if len(raw_body) > 20000:
@@ -105,12 +113,14 @@ class User:
 
         encrypted_previous_user_data = self.r.get(self.redis_key)
 
-        if encrypted_previous_user_data:
-            raw_previous_user_data = self.key.fernet.decrypt(encrypted_previous_user_data)
-            previous_state = json.loads(raw_previous_user_data)
+        if encrypted_previous_user_data is None:
+            raise web.notfound()
 
-            if parsed_body['previousUpdatedAt'] != previous_state['updatedAt']:
-                raise web.badrequest('List of activities has since been updated, please reload')
+        raw_previous_user_data = self.key.fernet.decrypt(encrypted_previous_user_data)
+        previous_state = json.loads(raw_previous_user_data)
+
+        if parsed_body['previousUpdatedAt'] != previous_state['updatedAt']:
+            raise web.badrequest('List of activities has since been updated, please reload')
 
         state = {
             'updatedAt': time.time(),

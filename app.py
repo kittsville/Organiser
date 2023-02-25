@@ -40,6 +40,9 @@ class homepage:
 class new_user:
     def GET(self):
         user_key = UserKey.random()
+        user = User(r, user_key)
+        user.setup_first_activities()
+
         raise web.found(f'/{user_key.base64_uuid()}?key={user_key.base64_encrpytion_key()}')
 
 class activities:
