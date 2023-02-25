@@ -41,13 +41,15 @@ class UserKey:
 
 class User:
     STATE_VERSION = 1
-    STATE_EXPIRY_SECONDS = 180 * 24 * 60 * 60
+    STATE_EDITED_EXPIRY_SECONDS = 180 * 24 * 60 * 60
+    STATE_UNEDITED_EXPIRY_SECONDS = 30 * 24 * 60 * 60
 
     @staticmethod
     def genDefaultState():
         return {
         'updatedAt': time.time(),
         'version': User.STATE_VERSION,
+        'unedited': True,
         'activities': [
             {
                 'name': 'Cycling',
@@ -90,7 +92,7 @@ class User:
     def setup_first_activities(self):
         raw_state           = json.dumps(User.genDefaultState())
         encrypted_raw_state = self.key.fernet.encrypt(raw_state.encode())
-        success             = self.r.setex(self.redis_key, User.STATE_EXPIRY_SECONDS, encrypted_raw_state)
+        success             = self.r.setex(self.redis_key, User.STATE_UNEDITED_EXPIRY_SECONDS, encrypted_raw_state)
 
         if not success:
             raise web.internalerror()
@@ -102,7 +104,11 @@ class User:
             raise web.notfound()
 
         raw_user_data = self.key.fernet.decrypt(encrypted_user_data)
-        self.r.expire(self.redis_key, User.STATE_EXPIRY_SECONDS)
+        user_data = json.loads(raw_user_data)
+
+        if not 'unedited' in user_data:
+            self.r.expire(self.redis_key, User.STATE_EDITED_EXPIRY_SECONDS)
+
         return raw_user_data
 
     def update_activities(self, raw_body: str):
@@ -132,7 +138,7 @@ class User:
 
         encrypted_raw_state = self.key.fernet.encrypt(raw_state.encode())
 
-        success = self.r.setex(self.redis_key, User.STATE_EXPIRY_SECONDS, encrypted_raw_state)
+        success = self.r.setex(self.redis_key, User.STATE_EDITED_EXPIRY_SECONDS, encrypted_raw_state)
 
         if success:
             return raw_state
