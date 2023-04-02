@@ -112,7 +112,10 @@ editEl.addEventListener('click', () => {
 makeChecklistEl.addEventListener('click', () => {
     const checklistItems        = userState.activities.flatMap(list => selectedListItems.has(list.name) ? list.items : []);
     const dedupedChecklistItems = [...new Set(checklistItems)];
-    const checklistText         = dedupedChecklistItems.join('\n');
+    const itemsToRemove         = new Set(dedupedChecklistItems.filter(item => item.startsWith('-')).map(item => item.slice(1).toLowerCase()));
+    const removalListApplied    = dedupedChecklistItems.filter(item => !itemsToRemove.has(item.toLowerCase()) && !item.startsWith('-'));
+    const removedOverrideSuffix = removalListApplied.map(item => item.replace(/(!!)$/, ''));
+    const checklistText         = removedOverrideSuffix.join('\n');
 
     navigator.clipboard.writeText(checklistText);
 })
