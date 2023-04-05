@@ -112,9 +112,18 @@ editEl.addEventListener('click', () => {
 makeChecklistEl.addEventListener('click', () => {
     const checklistItems        = userState.activities.flatMap(list => selectedListItems.has(list.name) ? list.items : []);
     const dedupedChecklistItems = [...new Set(checklistItems)];
-    const itemsToRemove         = new Set(dedupedChecklistItems.filter(item => item.startsWith('-')).map(item => item.slice(1).toLowerCase()));
-    const removalListApplied    = dedupedChecklistItems.filter(item => !itemsToRemove.has(item.toLowerCase()) && !item.startsWith('-'));
+
+    const nonOptionalItems      = new Set(dedupedChecklistItems.filter(item => !item.endsWith('?')).map(item => item.toLowerCase()));
+    const optionalItemsFiltered = dedupedChecklistItems.filter(item => !(item.endsWith('?') && nonOptionalItems.has(item.slice(0, -1).toLowerCase())));
+
+    const itemsToRemove         = new Set(optionalItemsFiltered.filter(item => item.startsWith('-')).map(item => item.slice(1).toLowerCase()));
+    const removalListApplied    = optionalItemsFiltered.filter(item =>
+        !itemsToRemove.has(item.toLowerCase()) &&
+        !(item.endsWith('?') && itemsToRemove.has(item.slice(0, -1).toLowerCase())) &&
+        !item.startsWith('-')
+    );
     const removedOverrideSuffix = removalListApplied.map(item => item.replace(/(!!)$/, ''));
+
     const checklistText         = removedOverrideSuffix.join('\n');
 
     navigator.clipboard.writeText(checklistText);
