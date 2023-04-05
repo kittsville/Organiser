@@ -110,8 +110,24 @@ editEl.addEventListener('click', () => {
 });
 
 makeChecklistEl.addEventListener('click', () => {
-    const checklistItems        = userState.activities.flatMap(list => selectedListItems.has(list.name) ? list.items : []);
-    const dedupedChecklistItems = [...new Set(checklistItems)];
+    const checklistItems = userState.activities.flatMap(list => selectedListItems.has(list.name) ? list.items : []);
+
+    const referencedResolved = checklistItems.flatMap(item => {
+        if (!item.startsWith('~')) {
+            return [item];
+        }
+
+        const reference = item.slice(1).toLowerCase();
+        const referencedListItems = userState.activities.find(list => list.name.toLowerCase() == reference);
+
+        if (referencedListItems == undefined) {
+            return [item];
+        } else {
+            return referencedListItems.items;
+        }
+    });
+
+    const dedupedChecklistItems = [...new Set(referencedResolved)];
 
     const nonOptionalItems      = new Set(dedupedChecklistItems.filter(item => !item.endsWith('?')).map(item => item.toLowerCase()));
     const optionalItemsFiltered = dedupedChecklistItems.filter(item => !(item.endsWith('?') && nonOptionalItems.has(item.slice(0, -1).toLowerCase())));
