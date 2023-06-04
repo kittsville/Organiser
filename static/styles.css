@@ -43,6 +43,11 @@ footer a:not(:hover) {
   color: grey;
 }
 
+#search-wrapper {
+  width: 100%;
+  max-width: 25em;
+}
+
 @media (max-width: 30em){
   h1.mdc-typography.mdc-typography--headline1 {
     font-size: 2.5em;
