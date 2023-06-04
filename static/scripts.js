@@ -109,24 +109,32 @@ editEl.addEventListener('click', () => {
     document.body.addEventListener('keyup', cancelEditWithEscape);
 });
 
+const resolveReferences = checklistItems => {
+    try {
+        return checklistItems.flatMap(item => {
+            if (!item.startsWith('~')) {
+                return [item];
+            }
+
+            const reference = item.slice(1).toLowerCase();
+            const referencedListItems = userState.activities.find(list => list.name.toLowerCase() == reference);
+
+            if (referencedListItems == undefined) {
+                return [item];
+            } else {
+                return resolveReferences(referencedListItems.items);
+            }
+        });
+    } catch {
+        alert("Bad girl");
+        return [];
+    }
+}
+
 makeChecklistEl.addEventListener('click', () => {
     const checklistItems = userState.activities.flatMap(list => selectedListItems.has(list.name) ? list.items : []);
 
-    const referencedResolved = checklistItems.flatMap(item => {
-        if (!item.startsWith('~')) {
-            return [item];
-        }
-
-        const reference = item.slice(1).toLowerCase();
-        const referencedListItems = userState.activities.find(list => list.name.toLowerCase() == reference);
-
-        if (referencedListItems == undefined) {
-            return [item];
-        } else {
-            return referencedListItems.items;
-        }
-    });
-
+    const referencedResolved    = resolveReferences(checklistItems);
     const dedupedChecklistItems = [...new Set(referencedResolved)];
 
     const nonOptionalItems      = new Set(dedupedChecklistItems.filter(item => !item.endsWith('?')).map(item => item.toLowerCase()));
