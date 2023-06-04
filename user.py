@@ -52,32 +52,25 @@ class User:
         'unedited': True,
         'activities': [
             {
-                'name': 'Cycling',
+                'name': 'Example Activities',
                 'items': [
-                    'D Lock',
-                    'D Lock keys',
-                    'Water bottle',
-                    'Helmet',
-                    'Snack bars',
-                    'Sunglasses?'
+                    'Regular Item',
+                    'Optional Item?'
                 ]
             },
             {
-                'name': 'Bouldering',
+                'name': 'Advanced Stuff',
                 'items': [
-                    'Chalk Bag',
-                    'Water Bottle',
-                    'Hair Tie',
-                    'Padlock'
+                    '-Remove Item',
+                    '!!Prevent Item Getting Removed',
+                    '~Reference Another Activity'
                 ]
             },
             {
-                'name': 'Sleeping Over',
+                'name': 'Reference Another Activity',
                 'items': [
-                    'Toothbrush',
-                    'Hair tie',
-                    'Comb',
-                    'Fresh underwear'
+                    'Using the tilde ~ symbol',
+                    'See example in Advanced Stuff'
                 ]
             }
         ]
