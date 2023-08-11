@@ -58,7 +58,7 @@ saveEl.addEventListener('click', () => {
     rawActivities = editableActivitiesEl.value.trim().split('\n\n');
 
     const activities = rawActivities.map(rawItems => {
-        const parsedItems = rawItems.trim().split('\n');
+        const parsedItems = rawItems.trim().split('\n').map(item => item.trim());
         if (parsedItems.length < 2) {
             const error = `Activity list has too few items: ${rawItems}`;
             alert(error);
