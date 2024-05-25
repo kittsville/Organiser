@@ -9,6 +9,7 @@ const helpTextEl = document.getElementById('help-text');
 const editorButtonsEl = document.getElementById('editor-buttons');
 const cancelEl = document.getElementById('cancel');
 const saveEl = document.getElementById('save');
+const headless = listsWrapperEl.classList.contains("headless");
 
 let userState = null;
 let previousActivityText = null;
@@ -72,25 +73,33 @@ saveEl.addEventListener('click', () => {
         return activity;
     });
 
-    const payload = {
-        activities,
-        previousUpdatedAt: userState.updatedAt
+    if (headless) {
+        handleNewUserState({
+            activities,
+            version: 1,
+            updatedAt: Date.now() / 1000
+        })
+    } else {
+        const payload = {
+            activities,
+            previousUpdatedAt: userState.updatedAt
+        }
+    
+        fetch(
+            `/api/activities/${user_uuid}?key=${encryption_key}`,
+            {
+                method: 'POST',
+                body: JSON.stringify(payload)
+            })
+            .then(response => {
+                if (response.ok) {
+                    response.json().then(handleNewUserState);
+                } else {
+                    response.text().then(handleServerError).catch(handleServerError);
+                }
+            })
+            .catch(handleServerError);
     }
-
-    fetch(
-        `/api/activities/${user_uuid}?key=${encryption_key}`,
-        {
-            method: 'POST',
-            body: JSON.stringify(payload)
-        })
-        .then(response => {
-            if (response.ok) {
-                response.json().then(handleNewUserState);
-            } else {
-                response.text().then(handleServerError).catch(handleServerError);
-            }
-        })
-        .catch(handleServerError);
 });
 
 editEl.addEventListener('click', () => {
@@ -205,7 +214,15 @@ const renderLoadError = (message) => {
 }
 
 addEventListener('DOMContentLoaded', () => {
-    fetch(`/api/activities/${user_uuid}?key=${encryption_key}`)
+    if (headless) {
+        handleNewUserState({
+            activities: [],
+            updatedAt: (Date.now() / 1000),
+            version: 1
+        });
+        editEl.click();
+    } else {
+        fetch(`/api/activities/${user_uuid}?key=${encryption_key}`)
         .then(response => {
             if (response.status == 200) {
                 return response.json();
@@ -221,6 +238,7 @@ addEventListener('DOMContentLoaded', () => {
             throw new Error('No Activities returned by server');
         })
         .then(handleNewUserState);
+    }
 
     // Initialises Material Design Components
     // See: https://github.com/material-components/material-components-web#javascript

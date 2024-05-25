@@ -1,0 +1,126 @@
+---
+---
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=360px, initial-scale=1">
+    <title>Organiser (Headless)</title>
+
+    <meta name="author" content="Kit Maywood">
+    <meta name="description" content="Dynamically build packing checklists and to-do lists">
+
+    <meta name="twitter:card" content="summary_large_image"></meta>
+    <meta name="twitter:site" content="@kittsville"></meta>
+    <meta property="og:title" content="Organiser" />
+    <meta property="og:description" content="Dynamically build packing checklists and to-do lists" />
+    <!-- <meta property="og:image" content="https://example.com/static/og-image.png" /> -->
+    <!-- <meta property="og:image:width" content="1080" />
+    <meta property="og:image:height" content="565" /> -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://o.sci1.uk/" />
+
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500" rel="stylesheet">
+    <link href="/static/material-components-web.min.css" rel="stylesheet">
+
+    <link href="/static/styles.css?v={{site.time | date: '%s' }}" rel="stylesheet">
+
+    <link rel="apple-touch-icon" sizes="57x57" href="/static/favicons/apple-icon-57x57.png">
+    <link rel="apple-touch-icon" sizes="60x60" href="/static/favicons/apple-icon-60x60.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="/static/favicons/apple-icon-72x72.png">
+    <link rel="apple-touch-icon" sizes="76x76" href="/static/favicons/apple-icon-76x76.png">
+    <link rel="apple-touch-icon" sizes="114x114" href="/static/favicons/apple-icon-114x114.png">
+    <link rel="apple-touch-icon" sizes="120x120" href="/static/favicons/apple-icon-120x120.png">
+    <link rel="apple-touch-icon" sizes="144x144" href="/static/favicons/apple-icon-144x144.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="/static/favicons/apple-icon-152x152.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/static/favicons/apple-icon-180x180.png">
+    <link rel="icon" type="image/png" sizes="192x192"  href="/static/favicons/android-icon-192x192.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/static/favicons/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="96x96" href="/static/favicons/favicon-96x96.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/static/favicons/favicon-16x16.png">
+    <link rel="shortcut icon" href="/static/favicons/favicon.ico">
+  </head>
+  <body class="mdc-typography">
+    <div class="spacer">
+      <h1 class="mdc-typography mdc-typography--headline1">Organiser (Headless)</h1>
+
+      <p>Statically hosted organiser to ensure continuity if app/host has issues.</p>
+
+      <main>
+        <p id="help-text" hidden>Make a checklist by selecting activities:</p>
+        
+        <div id="search-wrapper" class="mdc-text-field mdc-text-field--with-leading-icon mdc-text-field--filled" style="display: none">
+          <i class="material-icons mdc-text-field__icon" aria-hidden="true">search</i>
+          <input type="text" id="search" class="mdc-text-field__input" autocomplete="off">
+          <label class="mdc-floating-label" for="search">Search for activity</label>
+          <div class="mdc-line-ripple"></div>
+        </div>
+        
+        <script src="/static/search.js?v={{site.time | date: '%s' }}" defer></script>
+        
+        <div id="lists" class="headless">Waiting for JavaScript to load...</div>
+        
+        <div id="editable-activities-wrapper" hidden>
+          <label class="mdc-text-field mdc-text-field--outlined mdc-text-field--textarea mdc-text-field--no-label">
+            <span class="mdc-notched-outline">
+              <span class="mdc-notched-outline__leading"></span>
+              <span class="mdc-notched-outline__trailing"></span>
+            </span>
+            <span class="mdc-text-field__resizer">
+              <textarea id="editable-activities" class="mdc-text-field__input" rows="16" cols="40" aria-label="Label"></textarea>
+            </span>
+          </label>
+        </div>
+        
+        <div id="edit-wrapper" hidden>
+          <button id="edit" class="mdc-button mdc-button--icon-leading">
+            <span class="mdc-button__ripple"></span>
+            <i class="material-icons mdc-button__icon" aria-hidden="true">edit</i>
+            <span class="mdc-button__label">Edit Activities</span>
+          </button>
+        </div>
+        
+        <div id="editor-buttons" hidden>
+          <button id="save" class="mdc-button mdc-button--icon-leading">
+            <span class="mdc-button__ripple"></span>
+            <i class="material-icons mdc-button__icon" aria-hidden="true">save</i>
+            <span class="mdc-button__label">Save</span>
+          </button>
+          <button id="cancel" class="mdc-button mdc-button--icon-leading">
+            <span class="mdc-button__ripple"></span>
+            <i class="material-icons mdc-button__icon" aria-hidden="true">close</i>
+            <span class="mdc-button__label">Cancel</span>
+          </button>
+        </div>
+        </main>
+        
+        <div id="copy-checklist" hidden>
+        <button class="mdc-fab mdc-fab--extended">
+          <div class="mdc-fab__ripple"></div>
+          <span class="material-icons mdc-fab__icon">content_copy</span>
+          <span class="mdc-fab__label">Copy Checklist</span>
+        </button>
+        </div>
+        
+        <template id="template">
+        <li class="mdc-list-item">
+          <span class="mdc-list-item__ripple"></span>
+          <span class="mdc-list-item__text">
+              <span class="mdc-list-item__primary-text"></span>
+              <span class="mdc-list-item__secondary-text"></span>
+          </span>
+        </li>
+        </template>
+        
+        <script defer src="/static/scripts.js?v={{site.time | date: '%s' }}"></script>        
+      </main>
+
+      <script defer src="/static/material-components-web.min.js"></script>
+
+      <footer>
+        <a href="https://github.com/kittsville/Organiser">Report a Bug</a>
+      </footer>
+    </div>
+  </body>
+</html>
