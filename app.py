@@ -1,6 +1,7 @@
 import os
 import web
 import time
+import redis
 import psycopg2.extras
 
 from user import User, UserKey
@@ -10,7 +11,8 @@ urls = (
     '/health', 'health',
     '/([0-9a-zA-Z\-\_]{22})', 'activities',
     '/new', 'new_user',
-    '/', 'homepage'
+    '/', 'homepage',
+    '/migrate', 'migrate'
 )
 web.config.debug = os.getenv('DATABASE_URL') is None
 global_vars = {
@@ -26,12 +28,29 @@ psycopg2.extras.register_uuid()
 if not web.config.debug:
     app.internalerror = lambda: web.internalerror(templates.internal_error())
 
+redis_url = os.getenv('REDIS_URL', 'redis://localhost:6379')
+r = redis.from_url(redis_url)
+r.ping()
+
 class health:
     def GET(self):
         db.query("DELETE FROM user_state WHERE expires < NOW()")
         
         return web.ok()
-        
+
+class migrate:
+    def GET(self):
+        for key in r.keys(pattern="Organiser:*"):
+            user_uuid = key.decode().removeprefix("Organiser:")
+            print(f"Processing user {user_uuid}")
+            encrypted_user_data = r.get(key)
+
+            success = db.query(f'INSERT INTO {User.STATE_TABLE_NAME} (uuid, encrypted_raw_state, expires) VALUES ($a, $b, $c)', vars={'a': user_uuid, 'b':encrypted_user_data, 'c':User.STATE_EDITED_EXPIRY_SQL})
+
+            if not success:
+                raise web.internalerror("Failed to create user with default activities")
+
+        return "Done!"
 
 class homepage:
     def GET(self):
