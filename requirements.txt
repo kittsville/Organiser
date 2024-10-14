@@ -1,3 +1,4 @@
 web.py==0.62
 redis==4.3.5
+psycopg2==2.9.9
 cryptography
