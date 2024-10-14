@@ -6,7 +6,7 @@ import json
 import time
 
 from cryptography.fernet import Fernet
-from redis.client import Redis
+from web.db import DB
 
 class UserKey:
     def __init__(self, user_uuid: uuid.UUID, encryption_key: bytes):
@@ -40,9 +40,10 @@ class UserKey:
         return self.encryption_key.decode('utf8').rstrip('=\n')
 
 class User:
+    STATE_TABLE_NAME = 'user_state'
     STATE_VERSION = 1
-    STATE_EDITED_EXPIRY_SECONDS = 180 * 24 * 60 * 60
-    STATE_UNEDITED_EXPIRY_SECONDS = 30 * 24 * 60 * 60
+    STATE_EDITED_EXPIRY_SQL = web.db.SQLLiteral("NOW() + INTERVAL '180 DAYS'")
+    STATE_UNEDITED_EXPIRY_SQL = web.db.SQLLiteral("NOW() + INTERVAL '30 DAYS'")
 
     @staticmethod
     def genDefaultState():
@@ -77,30 +78,34 @@ class User:
     }
 
 
-    def __init__(self, r: "Redis[bytes]", user_key: UserKey):
-        self.r = r
+    def __init__(self, db: DB, user_key: UserKey):
+        self.db = db
         self.key = user_key
-        self.redis_key = f'Organiser:{user_key.uuid}'
+    
+    def __get_raw_user_data(self):
+        results = self.db.select(User.STATE_TABLE_NAME, what='encrypted_raw_state', where={'uuid': self.key.uuid})
+
+        if len(results) != 1:
+            raise web.notfound()
+
+        encrypted_user_data = bytes(results[0].encrypted_raw_state)
+
+        return self.key.fernet.decrypt(encrypted_user_data)
 
     def setup_first_activities(self):
         raw_state           = json.dumps(User.genDefaultState())
         encrypted_raw_state = self.key.fernet.encrypt(raw_state.encode())
-        success             = self.r.setex(self.redis_key, User.STATE_UNEDITED_EXPIRY_SECONDS, encrypted_raw_state)
+        success             = self.db.query(f'INSERT INTO {User.STATE_TABLE_NAME} (uuid, encrypted_raw_state, expires) VALUES ($a, $b, $c)', vars={'a': self.key.uuid, 'b':encrypted_raw_state, 'c':User.STATE_UNEDITED_EXPIRY_SQL})
 
         if not success:
-            raise web.internalerror()
+            raise web.internalerror("Failed to create user with default activities")
 
     def get_activities(self):
-        encrypted_user_data = self.r.get(self.redis_key)
-
-        if encrypted_user_data is None:
-            raise web.notfound()
-
-        raw_user_data = self.key.fernet.decrypt(encrypted_user_data)
+        raw_user_data = self.__get_raw_user_data()
         user_data = json.loads(raw_user_data)
 
         if not 'unedited' in user_data:
-            self.r.expire(self.redis_key, User.STATE_EDITED_EXPIRY_SECONDS)
+            self.db.update(User.STATE_TABLE_NAME, where={'uuid': self.key.uuid}, expires=User.STATE_EDITED_EXPIRY_SQL)
 
         return raw_user_data
 
@@ -110,12 +115,7 @@ class User:
 
         parsed_body = json.loads(raw_body)
 
-        encrypted_previous_user_data = self.r.get(self.redis_key)
-
-        if encrypted_previous_user_data is None:
-            raise web.notfound()
-
-        raw_previous_user_data = self.key.fernet.decrypt(encrypted_previous_user_data)
+        raw_previous_user_data = self.__get_raw_user_data()
         previous_state = json.loads(raw_previous_user_data)
 
         if parsed_body['previousUpdatedAt'] != previous_state['updatedAt']:
@@ -131,7 +131,7 @@ class User:
 
         encrypted_raw_state = self.key.fernet.encrypt(raw_state.encode())
 
-        success = self.r.setex(self.redis_key, User.STATE_EDITED_EXPIRY_SECONDS, encrypted_raw_state)
+        success = self.db.update(User.STATE_TABLE_NAME, where={'uuid': self.key.uuid}, encrypted_raw_state=encrypted_raw_state, expires=User.STATE_EDITED_EXPIRY_SQL)
 
         if success:
             return raw_state
