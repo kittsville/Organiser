@@ -63,7 +63,7 @@ class User:
                 'name': 'Advanced Stuff',
                 'items': [
                     '-Remove Item',
-                    '!!Prevent Item Getting Removed',
+                    'Prevent Item Getting Removed!!',
                     '~Reference Another Activity'
                 ]
             },
