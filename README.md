@@ -5,21 +5,24 @@ Dynamically build packing checklists and to-do lists
 ## Requirements
 
 - Python 3.9
-- Redis
+- Docker (or Postgres 15)
 - pip
 
-## Installation
+Currently [doesn't work](https://github.com/webpy/webpy/issues/799) on Python 3.13
 
-`pip install -r requirements.txt`
+## Setup
 
-## Usage
+1. `python3 -m venv .venv`
+2. `source .venv/bin/activate`
+3. `pip install -r requirements.txt`
 
-### To start
+## Running the app
 
-This guide assumes Redis is already running
-
-`python app.py`
-Then navigate to http://0.0.0.0:8080/
+1. `docker compose up` (Ctrl + C when you're done with development)
+2. Open a new tab
+3. `source .venv/bin/activate`
+4. `python app.py`
+5. Navigate to http://0.0.0.0:8080/
 
 ## Contributing
 
