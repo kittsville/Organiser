@@ -157,7 +157,9 @@ makeChecklistEl.addEventListener('click', () => {
     );
     const removedOverrideSuffix = removalListApplied.map(item => item.replace(/(!!)$/, ''));
 
-    const addCheckBoxes = removedOverrideSuffix.map(item => item.replace(/^/, "- [ ] "))
+    let md_check = document.getElementById("md-check");
+
+    const addCheckBoxes = (md_check.checked ? removedOverrideSuffix.map(item => item.replace(/^/, "- [ ] ")) : removedOverrideSuffix);
 
     const checklistText         = addCheckBoxes.join('\n');
 
