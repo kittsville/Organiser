@@ -4,7 +4,7 @@ Dynamically build packing checklists and to-do lists
 
 ## Requirements
 
-- Python 3.9
+- Python 3.9 (or use Docker)
 - Docker (or Postgres 15)
 - pip
 
@@ -15,6 +15,13 @@ Currently [doesn't work](https://github.com/webpy/webpy/issues/799) on Python 3.
 1. `python3 -m venv .venv`
 2. `source .venv/bin/activate`
 3. `pip install -r requirements.txt`
+
+### I don't have Python 3.9
+
+1. Use `docker build -t "organiser" .` to build the app as a Docker image
+2. Uncomment the organiser section of `compose.yaml`
+3. `docker compose up`
+4. Navigate to http://0.0.0.0:8080/
 
 ## Running the app
 
