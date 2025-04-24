@@ -31,6 +31,20 @@ Currently [doesn't work](https://github.com/webpy/webpy/issues/799) on Python 3.
 4. `python app.py`
 5. Navigate to http://0.0.0.0:8080/
 
+## Headless version
+
+Organiser is both a webapp with an encrpyted database and a static website. These are hosted separately to ensure you can still use the Organiser if the webapp goes down:
+- https://o.sci1.uk/
+- https://headless.o.sci1.uk/
+
+The headless version is a Jekyll site that uses a separate page template `index.html` but shares the JS/CSS. Please ensure any changes you make to the JS are compatible with the headless version.
+
+### Running the headless version
+
+1. Install [jekyll](https://jekyllrb.com/), an open-source ruby-based static site generator
+2. Open a terminal in the project directory
+3. Run `jekyll serve`, which will automatically build and serve the site
+
 ## Contributing
 
 Contributions are always welcome. This could mean requesting features, reporting bugs or creating pull requests.
