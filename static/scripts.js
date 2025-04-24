@@ -157,7 +157,11 @@ makeChecklistEl.addEventListener('click', () => {
     );
     const removedOverrideSuffix = removalListApplied.map(item => item.replace(/(!!)$/, ''));
 
-    const checklistText         = removedOverrideSuffix.join('\n');
+    let md_check = document.getElementById("md-check");
+
+    const addCheckBoxes = (md_check.checked ? removedOverrideSuffix.map(item => item.replace(/^/, "- [ ] ")) : removedOverrideSuffix);
+
+    const checklistText         = addCheckBoxes.join('\n');
 
     navigator.clipboard.writeText(checklistText);
 })
@@ -244,4 +248,5 @@ addEventListener('DOMContentLoaded', () => {
     // See: https://github.com/material-components/material-components-web#javascript
     Array.from(document.getElementsByClassName('mdc-text-field')).forEach(mdc.textField.MDCTextField.attachTo);
     Array.from(document.getElementsByTagName('button')).forEach(mdc.iconButton.MDCIconButtonToggle.attachTo);
+    Array.from(document.getElementsByClassName('mdc-switch')).forEach(mdc.switchControl.MDCSwitch.attachTo);
 });
