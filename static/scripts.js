@@ -248,5 +248,5 @@ addEventListener('DOMContentLoaded', () => {
     // See: https://github.com/material-components/material-components-web#javascript
     Array.from(document.getElementsByClassName('mdc-text-field')).forEach(mdc.textField.MDCTextField.attachTo);
     Array.from(document.getElementsByTagName('button')).forEach(mdc.iconButton.MDCIconButtonToggle.attachTo);
-    Array.from(document.getElementsByClassName('mdc-switch')).forEach(mdc.switch.MDCSwitch.attachTo);
+    Array.from(document.getElementsByClassName('mdc-switch')).forEach(mdc.switchControl.MDCSwitch.attachTo);
 });
