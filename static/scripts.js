@@ -19,7 +19,7 @@ const url = new URL(location);
 const encryption_key = url.searchParams.get('key');
 const user_uuid = url.pathname.substring(url.pathname.indexOf('/') + 1);
 
-const localDebug = ['localhost', '0.0.0.0', '127.0.0.1'].includes(url.hostname);
+const localDebug = ['localhost', '0.0.0.0', '127.0.0.1', '[::]'].includes(url.hostname);
 if (localDebug) {
     console.info(`Debugging - host detected as ${url.hostname}`);
 }
