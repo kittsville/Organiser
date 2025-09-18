@@ -19,6 +19,11 @@ const url = new URL(location);
 const encryption_key = url.searchParams.get('key');
 const user_uuid = url.pathname.substring(url.pathname.indexOf('/') + 1);
 
+const localDebug = ['localhost', '0.0.0.0', '127.0.0.1'].includes(url.hostname);
+if (localDebug) {
+    console.info(`Debugging - host detected as ${url.hostname}`);
+}
+
 const handleServerError = error => alert(`Updating activity list failed: ${error}`);
 const handleNewUserState = user => {
     userState = user;
@@ -121,18 +126,25 @@ editEl.addEventListener('click', () => {
 const resolveReferences = checklistItems => {
     try {
         return checklistItems.flatMap(item => {
-            if (!item.startsWith('~')) {
+            if (localDebug) {
+                console.debug('Resolving item:', item);
+            }
+            if (!item.startsWith('~') && !item.startsWith('-~')) {
                 return [item];
             }
 
-            const reference = item.slice(1).toLowerCase();
-            const referencedListItems = userState.activities.find(list => list.name.toLowerCase() == reference);
+            const isRemove = item.startsWith('-~');
+            const reference = item.replace(/^-?~/, '').toLowerCase();
+            const referencedList = userState.activities.find(list => list.name.toLowerCase() === reference);
 
-            if (referencedListItems == undefined) {
+            if (!referencedList) {
                 return [item];
-            } else {
-                return resolveReferences(referencedListItems.items);
             }
+
+            const expandedItems = resolveReferences(referencedList.items);
+            return isRemove
+                ? expandedItems.map(listItem => '-' + listItem)
+                : expandedItems;
         });
     } catch {
         alert("Bad girl");
@@ -150,6 +162,13 @@ makeChecklistEl.addEventListener('click', () => {
     const optionalItemsFiltered = dedupedChecklistItems.filter(item => !(item.endsWith('?') && nonOptionalItems.has(item.slice(0, -1).toLowerCase())));
 
     const itemsToRemove         = new Set(optionalItemsFiltered.filter(item => item.startsWith('-')).map(item => item.slice(1).toLowerCase()));
+
+    if (localDebug) {
+        itemsToRemove.forEach((item) => {
+            console.debug(`Removing ${item} if present`);
+        });
+    }
+
     const removalListApplied    = optionalItemsFiltered.filter(item =>
         !itemsToRemove.has(item.toLowerCase()) &&
         !(item.endsWith('?') && itemsToRemove.has(item.slice(0, -1).toLowerCase())) &&
@@ -162,6 +181,10 @@ makeChecklistEl.addEventListener('click', () => {
     const addCheckBoxes = (md_check.checked ? removedOverrideSuffix.map(item => item.replace(/^/, "- [ ] ")) : removedOverrideSuffix);
 
     const checklistText         = addCheckBoxes.join('\n');
+
+    if (localDebug) {
+        console.debug(checklistText);
+    }
 
     navigator.clipboard.writeText(checklistText);
 })
