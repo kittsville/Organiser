@@ -1,5 +1,7 @@
 # Organiser
 
+![Tests and deployment status](https://github.com/kittsville/Organiser/actions/workflows/build.yml/badge.svg)
+
 Dynamically build packing checklists and to-do lists
 
 ## Requirements
