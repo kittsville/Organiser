@@ -1,4 +1,5 @@
-$def with ()
+{% extends "layout.html" %}
+{% block content %}
 <p>Organiser saves time creating packing checklists. Build checklists by selecting activities you have planned to combine the checklists for each.</p>
 
 <p>Get started by creating a new user. It'll create a unique URL including an encryption key, so nobody else can read your lists. Don't share the unique URL with anyone else!</p>
@@ -12,3 +13,4 @@ $def with ()
         <span class="mdc-button__label">Create Encrypted User</span>
     </button>
 </a>
+{% endblock %}

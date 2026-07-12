@@ -1,4 +1,5 @@
-$def with (user_uuid)
+{% extends "layout.html" %}
+{% block content %}
 <p id="help-text" hidden>Make a checklist by selecting activities:</p>
 
 <div id="search-wrapper" class="mdc-text-field mdc-text-field--with-leading-icon mdc-text-field--filled" style="display: none">
@@ -8,9 +9,9 @@ $def with (user_uuid)
   <div class="mdc-line-ripple"></div>
 </div>
 
-<script src="/static/search.js?v=$cacheBust" defer></script>
+<script src="/static/search.js?v={{ cacheBust }}" defer></script>
 
-<div id="lists">Loading activities for user $user_uuid...</div>
+<div id="lists">Loading activities for user {{ user_uuid }}...</div>
 
 <div id="editable-activities-wrapper" hidden>
   <label class="mdc-text-field mdc-text-field--outlined mdc-text-field--textarea mdc-text-field--no-label">
@@ -72,4 +73,5 @@ $def with (user_uuid)
 </li>
 </template>
 
-<script defer src="/static/scripts.js?v=$cacheBust"></script>
+<script defer src="/static/scripts.js?v={{ cacheBust }}"></script>
+{% endblock %}

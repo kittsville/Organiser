@@ -1,12 +1,13 @@
-import web
-import uuid
 import base64
 import binascii
 import json
 import time
+import uuid
 
 from cryptography.fernet import Fernet
-from web.db import DB
+from flask import abort
+from psycopg2.extensions import connection as Connection
+
 
 class UserKey:
     def __init__(self, user_uuid: uuid.UUID, encryption_key: bytes):
@@ -27,11 +28,11 @@ class UserKey:
             encryption_key = f'{raw_encryption_key}='.encode('utf8')
 
             if len(encryption_key) != 44:
-                raise web.badrequest('Invalid encryption key')
+                abort(400, description='Invalid encryption key')
 
             return UserKey(uuid.UUID(bytes=uuid_bytes, version=4), encryption_key)
         except (ValueError, binascii.Error) as e:
-            raise web.badrequest(f'Invalid user key: {e}')
+            abort(400, description=f'Invalid user key: {e}')
 
     def base64_uuid(self):
         return base64.urlsafe_b64encode(self.uuid.bytes).decode('utf8').rstrip('=\n')
@@ -39,11 +40,12 @@ class UserKey:
     def base64_encrpytion_key(self):
         return self.encryption_key.decode('utf8').rstrip('=\n')
 
+
 class User:
     STATE_TABLE_NAME = 'user_state'
     STATE_VERSION = 1
-    STATE_EDITED_EXPIRY_SQL = web.db.SQLLiteral("NOW() + INTERVAL '180 DAYS'")
-    STATE_UNEDITED_EXPIRY_SQL = web.db.SQLLiteral("NOW() + INTERVAL '30 DAYS'")
+    STATE_EDITED_EXPIRY_SQL = "NOW() + INTERVAL '180 DAYS'"
+    STATE_UNEDITED_EXPIRY_SQL = "NOW() + INTERVAL '30 DAYS'"
 
     @staticmethod
     def genDefaultState():
@@ -78,40 +80,60 @@ class User:
     }
 
 
-    def __init__(self, db: DB, user_key: UserKey):
+    def __init__(self, db: Connection, user_key: UserKey):
         self.db = db
         self.key = user_key
-    
+
     def __get_raw_user_data(self):
-        results = self.db.select(User.STATE_TABLE_NAME, what='encrypted_raw_state', where={'uuid': self.key.uuid})
+        with self.db.cursor() as cur:
+            cur.execute(
+                f'SELECT encrypted_raw_state FROM {User.STATE_TABLE_NAME} WHERE uuid = %s',
+                (self.key.uuid,),
+            )
+            result = cur.fetchone()
 
-        if len(results) != 1:
-            raise web.notfound()
+        if result is None:
+            abort(404)
 
-        encrypted_user_data = bytes(results[0].encrypted_raw_state)
-
+        encrypted_user_data = bytes(result['encrypted_raw_state'])
         return self.key.fernet.decrypt(encrypted_user_data)
 
     def setup_first_activities(self):
-        raw_state           = json.dumps(User.genDefaultState())
+        raw_state = json.dumps(User.genDefaultState())
         encrypted_raw_state = self.key.fernet.encrypt(raw_state.encode())
-        success             = self.db.query(f'INSERT INTO {User.STATE_TABLE_NAME} (uuid, encrypted_raw_state, expires) VALUES ($a, $b, $c)', vars={'a': self.key.uuid, 'b':encrypted_raw_state, 'c':User.STATE_UNEDITED_EXPIRY_SQL})
+
+        with self.db.cursor() as cur:
+            cur.execute(
+                f'INSERT INTO {User.STATE_TABLE_NAME} '
+                f'(uuid, encrypted_raw_state, expires) '
+                f'VALUES (%s, %s, {User.STATE_UNEDITED_EXPIRY_SQL})',
+                (self.key.uuid, encrypted_raw_state),
+            )
+            success = cur.rowcount
+        self.db.commit()
 
         if not success:
-            raise web.internalerror("Failed to create user with default activities")
+            abort(500, description="Failed to create user with default activities")
 
     def get_activities(self):
         raw_user_data = self.__get_raw_user_data()
         user_data = json.loads(raw_user_data)
 
-        if not 'unedited' in user_data:
-            self.db.update(User.STATE_TABLE_NAME, where={'uuid': self.key.uuid}, expires=User.STATE_EDITED_EXPIRY_SQL)
+        if 'unedited' not in user_data:
+            with self.db.cursor() as cur:
+                cur.execute(
+                    f'UPDATE {User.STATE_TABLE_NAME} '
+                    f'SET expires = {User.STATE_EDITED_EXPIRY_SQL} '
+                    f'WHERE uuid = %s',
+                    (self.key.uuid,),
+                )
+            self.db.commit()
 
         return raw_user_data
 
-    def update_activities(self, raw_body: str):
+    def update_activities(self, raw_body: bytes):
         if len(raw_body) > 20000:
-            return web.badrequest('List of activities too large')
+            abort(400, description='List of activities too large')
 
         parsed_body = json.loads(raw_body)
 
@@ -119,7 +141,7 @@ class User:
         previous_state = json.loads(raw_previous_user_data)
 
         if parsed_body['previousUpdatedAt'] != previous_state['updatedAt']:
-            raise web.badrequest('List of activities has since been updated, please reload')
+            abort(400, description='List of activities has since been updated, please reload')
 
         state = {
             'updatedAt': time.time(),
@@ -128,12 +150,19 @@ class User:
         }
 
         raw_state = json.dumps(state)
-
         encrypted_raw_state = self.key.fernet.encrypt(raw_state.encode())
 
-        success = self.db.update(User.STATE_TABLE_NAME, where={'uuid': self.key.uuid}, encrypted_raw_state=encrypted_raw_state, expires=User.STATE_EDITED_EXPIRY_SQL)
+        with self.db.cursor() as cur:
+            cur.execute(
+                f'UPDATE {User.STATE_TABLE_NAME} '
+                f'SET encrypted_raw_state = %s, expires = {User.STATE_EDITED_EXPIRY_SQL} '
+                f'WHERE uuid = %s',
+                (encrypted_raw_state, self.key.uuid),
+            )
+            success = cur.rowcount
+        self.db.commit()
 
         if success:
             return raw_state
         else:
-            return web.internalerror()
+            abort(500)
