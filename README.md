@@ -4,6 +4,22 @@
 
 Dynamically build packing checklists and to-do lists
 
+## List combination rules
+
+Select one or more activities and copy a combined checklist. Item syntax:
+
+| Syntax | Meaning |
+|--------|---------|
+| `Socks` | Required item |
+| `Socks?` | Optional — dropped if `Socks` is also present |
+| `~List` | Include that activity’s items (recursive) |
+| `~List?` | Same, but every included item becomes optional |
+| `-~List` | Remove that activity’s items from the result |
+| `-Socks` | Remove `Socks` / `Socks?` from the result |
+| `Socks!!` | Keep even if `-Socks` is present (`!!` stripped in output) |
+
+Exact duplicates are removed. Missing `~` references are left as-is.
+
 ## Requirements
 
 - Python 3.9+ (or use Docker)
