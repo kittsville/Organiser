@@ -136,7 +136,11 @@ const resolveReferences = checklistItems => {
             }
 
             const isRemove = item.startsWith('-~');
-            const reference = item.replace(/^-?~/, '').toLowerCase();
+            let reference = item.replace(/^-?~/, '').toLowerCase();
+            const isOptional = reference.endsWith('?');
+            if (isOptional) {
+                reference = reference.slice(0, -1);
+            }
             const referencedList = userState.activities.find(list => list.name.toLowerCase() === reference);
 
             if (!referencedList) {
@@ -144,9 +148,13 @@ const resolveReferences = checklistItems => {
             }
 
             const expandedItems = resolveReferences(referencedList.items);
-            return isRemove
-                ? expandedItems.map(listItem => '-' + listItem)
-                : expandedItems;
+            if (isRemove) {
+                return expandedItems.map(listItem => '-' + listItem);
+            }
+            if (isOptional) {
+                return expandedItems.map(listItem => listItem.endsWith('?') ? listItem : listItem + '?');
+            }
+            return expandedItems;
         });
     } catch {
         alert("Bad girl");
