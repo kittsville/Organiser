@@ -125,72 +125,14 @@ editEl.addEventListener('click', () => {
     document.body.addEventListener('keyup', cancelEditWithEscape);
 });
 
-const resolveReferences = checklistItems => {
-    try {
-        return checklistItems.flatMap(item => {
-            if (localDebug) {
-                console.debug('Resolving item:', item);
-            }
-            if (!item.startsWith('~') && !item.startsWith('-~')) {
-                return [item];
-            }
-
-            const isRemove = item.startsWith('-~');
-            let reference = item.replace(/^-?~/, '').toLowerCase();
-            const isOptional = reference.endsWith('?');
-            if (isOptional) {
-                reference = reference.slice(0, -1);
-            }
-            const referencedList = userState.activities.find(list => list.name.toLowerCase() === reference);
-
-            if (!referencedList) {
-                return [item];
-            }
-
-            const expandedItems = resolveReferences(referencedList.items);
-            if (isRemove) {
-                return expandedItems.map(listItem => '-' + listItem);
-            }
-            if (isOptional) {
-                return expandedItems.map(listItem => listItem.endsWith('?') ? listItem : listItem + '?');
-            }
-            return expandedItems;
-        });
-    } catch {
-        alert("Bad girl");
-        return [];
-    }
-}
-
 makeChecklistEl.addEventListener('click', () => {
-    const checklistItems = userState.activities.flatMap(list => selectedListItems.has(list.name) ? list.items : []);
-
-    const referencedResolved    = resolveReferences(checklistItems);
-    const dedupedChecklistItems = [...new Set(referencedResolved)];
-
-    const nonOptionalItems      = new Set(dedupedChecklistItems.filter(item => !item.endsWith('?')).map(item => item.toLowerCase()));
-    const optionalItemsFiltered = dedupedChecklistItems.filter(item => !(item.endsWith('?') && nonOptionalItems.has(item.slice(0, -1).toLowerCase())));
-
-    const itemsToRemove         = new Set(optionalItemsFiltered.filter(item => item.startsWith('-')).map(item => item.slice(1).toLowerCase()));
-
-    if (localDebug) {
-        itemsToRemove.forEach((item) => {
-            console.debug(`Removing ${item} if present`);
-        });
-    }
-
-    const removalListApplied    = optionalItemsFiltered.filter(item =>
-        !itemsToRemove.has(item.toLowerCase()) &&
-        !(item.endsWith('?') && itemsToRemove.has(item.slice(0, -1).toLowerCase())) &&
-        !item.startsWith('-')
-    );
-    const removedOverrideSuffix = removalListApplied.map(item => item.replace(/(!!)$/, ''));
+    const removedOverrideSuffix = combineChecklists(userState.activities, [...selectedListItems]);
 
     let md_check = document.getElementById("md-check");
 
     const addCheckBoxes = (md_check.checked ? removedOverrideSuffix.map(item => item.replace(/^/, "- [ ] ")) : removedOverrideSuffix);
 
-    const checklistText         = addCheckBoxes.join('\n');
+    const checklistText = addCheckBoxes.join('\n');
 
     if (localDebug) {
         console.debug(checklistText);
