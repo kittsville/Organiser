@@ -44,6 +44,7 @@ const switchToListMode = () => {
     helpTextEl.hidden = false;
     listsWrapperEl.hidden = false;
     editWrapperEl.hidden = false;
+    document.body.classList.remove('edit-mode');
 
     document.body.removeEventListener('keyup', cancelEditWithEscape);
 };
@@ -112,6 +113,7 @@ editEl.addEventListener('click', () => {
     listsWrapperEl.hidden = true;
     editWrapperEl.hidden = true;
     helpTextEl.hidden = true;
+    document.body.classList.add('edit-mode');
 
     const activitiesAsText = userState.activities.map(item => item.name + '\n' + item.items.join('\n')).join('\n\n');
 
