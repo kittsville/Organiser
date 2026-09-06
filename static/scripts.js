@@ -138,7 +138,11 @@ makeChecklistEl.addEventListener('click', () => {
         console.debug(checklistText);
     }
 
-    navigator.clipboard.writeText(checklistText);
+    navigator.clipboard.writeText(checklistText).then(() => {
+        makeChecklistEl.classList.remove('is-copied');
+        void makeChecklistEl.offsetWidth;
+        makeChecklistEl.classList.add('is-copied');
+    });
 })
 
 const onListItemClick = listItemEl => {
