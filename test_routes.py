@@ -41,6 +41,25 @@ def test_homepage(client):
     assert response.status_code == 200
     assert b'Organiser' in response.data
     assert b'Create Encrypted User' in response.data
+    assert (
+        b'https://github.com/kittsville/Organiser/commit/latest'
+        in response.data
+    )
+    assert b'>latest</a>' in response.data
+
+
+def test_homepage_shows_deployed_commit(flask_app, client):
+    previous = flask_app.config['appVersion']
+    flask_app.config['appVersion'] = 'abcdef1234567890'
+    try:
+        response = client.get('/')
+    finally:
+        flask_app.config['appVersion'] = previous
+    assert (
+        b'https://github.com/kittsville/Organiser/commit/abcdef1234567890'
+        in response.data
+    )
+    assert b'>abcdef</a>' in response.data
 
 
 def test_not_found(client):

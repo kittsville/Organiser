@@ -12,6 +12,7 @@ app = Flask(__name__)
 app.debug = os.getenv('DATABASE_URL') is None
 app.config.update(
     cacheBust=str(int(time.time())),
+    appVersion=os.getenv('SOURCE_COMMIT', 'latest'),
 )
 
 DATABASE_URL = os.getenv(

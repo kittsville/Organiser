@@ -128,7 +128,9 @@
       <script defer src="/static/material-components-web.min.js"></script>
 
       <footer>
-        <a href="https://github.com/kittsville/Organiser">Report a Bug</a>
+        {% assign app_version = site.github.build_revision | default: 'latest' %}
+        v<a href="https://github.com/kittsville/Organiser/commit/{{ app_version }}">{{ app_version | slice: 0, 6 }}</a>
+        | <a href="https://github.com/kittsville/Organiser">Report a Bug</a>
       </footer>
     </div>
   </body>
