@@ -55,10 +55,7 @@ body {
 
 footer {
   margin-top: auto;
-}
-
-footer a {
-  margin: .5rem;
+  text-align: center;
 }
 
 footer a:not(:hover) {
