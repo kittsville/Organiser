@@ -13,6 +13,8 @@
 
 <div id="lists">Loading activities for user {{ user_uuid }}...</div>
 
+<div id="combined-checklist" hidden></div>
+
 <div id="editable-activities-wrapper" hidden>
   <label class="mdc-text-field mdc-text-field--outlined mdc-text-field--textarea mdc-text-field--no-label">
     <span class="mdc-notched-outline">
@@ -53,13 +55,21 @@
     <span class="mdc-button__label">Cancel</span>
   </button>
 </div>
+
+<div id="view-buttons" hidden>
+  <button id="close-view" class="mdc-button mdc-button--icon-leading">
+    <span class="mdc-button__ripple"></span>
+    <i class="material-icons mdc-button__icon" aria-hidden="true">close</i>
+    <span class="mdc-button__label">Close</span>
+  </button>
+</div>
 </main>
 
 <div id="copy-checklist" hidden>
 <button class="mdc-fab mdc-fab--extended">
   <div class="mdc-fab__ripple"></div>
-  <span class="material-icons mdc-fab__icon">content_copy</span>
-  <span class="mdc-fab__label">Copy Checklist</span>
+  <span class="material-icons mdc-fab__icon">call_merge</span>
+  <span class="mdc-fab__label">Combine</span>
 </button>
 </div>
 

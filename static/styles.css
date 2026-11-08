@@ -13,8 +13,17 @@ body {
 
 }
 
-#lists {
+#lists,
+#combined-checklist {
   max-width: 40em;
+}
+
+#combined-checklist .checklist-item--optional {
+  height: 72px;
+}
+
+#combined-checklist .checklist-item--optional .mdc-list-item__text {
+  align-self: flex-start;
 }
 
 .selected {
@@ -67,7 +76,8 @@ footer a:not(:hover) {
   max-width: 25em;
 }
 
-body.edit-mode #search-wrapper {
+body.edit-mode #search-wrapper,
+body.view-mode #search-wrapper {
   display: none !important;
 }
 

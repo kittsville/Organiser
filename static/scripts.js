@@ -9,10 +9,14 @@ const helpTextEl = document.getElementById('help-text');
 const editorButtonsEl = document.getElementById('editor-buttons');
 const cancelEl = document.getElementById('cancel');
 const saveEl = document.getElementById('save');
+const combinedChecklistEl = document.getElementById('combined-checklist');
+const viewButtonsEl = document.getElementById('view-buttons');
+const closeViewEl = document.getElementById('close-view');
 const headless = listsWrapperEl.classList.contains("headless");
 
 let userState = null;
 let previousActivityText = null;
+let combinedList = null;
 const selectedListItems = new Set();
 
 const url = new URL(location);
@@ -37,16 +41,35 @@ const cancelEditWithEscape = e => {
     }
 };
 
+const closeViewWithEscape = e => {
+    if (e.key === "Escape") {
+        closeViewEl.click();
+    }
+};
+
+const clearCombinedList = () => {
+    if (combinedList) {
+        combinedList.destroy();
+        combinedList = null;
+    }
+    combinedChecklistEl.replaceChildren();
+};
+
 const switchToListMode = () => {
     editorButtonsEl.hidden = true;
     editableActivitiesWrapperEl.hidden = true;
+    viewButtonsEl.hidden = true;
+    combinedChecklistEl.hidden = true;
+    clearCombinedList();
 
     helpTextEl.hidden = false;
     listsWrapperEl.hidden = false;
     editWrapperEl.hidden = false;
-    document.body.classList.remove('edit-mode');
+    makeChecklistEl.hidden = selectedListItems.size < 1;
+    document.body.classList.remove('edit-mode', 'view-mode');
 
     document.body.removeEventListener('keyup', cancelEditWithEscape);
+    document.body.removeEventListener('keyup', closeViewWithEscape);
 };
 
 const deselectAllActivities = () =>
@@ -114,6 +137,7 @@ editEl.addEventListener('click', () => {
     editWrapperEl.hidden = true;
     helpTextEl.hidden = true;
     document.body.classList.add('edit-mode');
+    document.body.classList.remove('view-mode');
 
     const activitiesAsText = userState.activities.map(item => item.name + '\n' + item.items.join('\n')).join('\n\n');
 
@@ -125,7 +149,99 @@ editEl.addEventListener('click', () => {
     document.body.addEventListener('keyup', cancelEditWithEscape);
 });
 
+const CHECKBOX_GRAPHIC = `
+<span class="mdc-list-item__ripple"></span>
+<span class="mdc-list-item__graphic">
+  <div class="mdc-checkbox">
+    <input type="checkbox" class="mdc-checkbox__native-control">
+    <div class="mdc-checkbox__background">
+      <svg class="mdc-checkbox__checkmark" viewBox="0 0 24 24">
+        <path class="mdc-checkbox__checkmark-path" fill="none" d="M1.73,12.91 8.1,19.28 22.79,4.59"></path>
+      </svg>
+      <div class="mdc-checkbox__mixedmark"></div>
+    </div>
+    <div class="mdc-checkbox__ripple"></div>
+  </div>
+</span>`;
+
+const renderCombinedChecklist = (items) => {
+    clearCombinedList();
+
+    if (items.length === 0) {
+        const emptyEl = document.createElement('p');
+        emptyEl.textContent = 'No items in this checklist.';
+        combinedChecklistEl.appendChild(emptyEl);
+        return;
+    }
+
+    const listEl = document.createElement('ul');
+    listEl.className = 'mdc-list';
+    listEl.setAttribute('role', 'group');
+    listEl.setAttribute('aria-label', 'Combined checklist');
+
+    items.forEach((item, index) => {
+        const optional = item.endsWith('?');
+        const name = optional ? item.slice(0, -1) : item;
+        const listItemEl = document.createElement('li');
+        listItemEl.className = 'mdc-list-item';
+        listItemEl.setAttribute('role', 'checkbox');
+        listItemEl.setAttribute('aria-checked', 'false');
+        if (index === 0) {
+            listItemEl.tabIndex = 0;
+        }
+        listItemEl.insertAdjacentHTML('beforeend', CHECKBOX_GRAPHIC);
+
+        const textEl = document.createElement('span');
+        textEl.className = 'mdc-list-item__text';
+        if (optional) {
+            listItemEl.classList.add('checklist-item--optional');
+            const primaryEl = document.createElement('span');
+            primaryEl.className = 'mdc-list-item__primary-text';
+            primaryEl.textContent = name;
+            const secondaryEl = document.createElement('span');
+            secondaryEl.className = 'mdc-list-item__secondary-text';
+            secondaryEl.textContent = 'optional';
+            textEl.append(primaryEl, secondaryEl);
+        } else {
+            textEl.textContent = name;
+        }
+        listItemEl.appendChild(textEl);
+        listEl.appendChild(listItemEl);
+    });
+
+    combinedChecklistEl.appendChild(listEl);
+    combinedList = new mdc.list.MDCList(listEl);
+    combinedList.listElements.forEach(element => mdc.ripple.MDCRipple.attachTo(element));
+    listEl.querySelectorAll('.mdc-checkbox').forEach(element => mdc.checkbox.MDCCheckbox.attachTo(element));
+};
+
+const switchToViewMode = (items) => {
+    listsWrapperEl.hidden = true;
+    editWrapperEl.hidden = true;
+    helpTextEl.hidden = true;
+    editorButtonsEl.hidden = true;
+    editableActivitiesWrapperEl.hidden = true;
+
+    document.body.classList.add('view-mode');
+    document.body.classList.remove('edit-mode');
+    renderCombinedChecklist(items);
+    combinedChecklistEl.hidden = false;
+    viewButtonsEl.hidden = false;
+
+    document.body.addEventListener('keyup', closeViewWithEscape);
+};
+
+const hideCombineButton = () => {
+    if (document.body.classList.contains('view-mode')) {
+        makeChecklistEl.hidden = true;
+    }
+};
+
 makeChecklistEl.addEventListener('click', () => {
+    if (document.body.classList.contains('view-mode')) {
+        return;
+    }
+
     const removedOverrideSuffix = combineChecklists(userState.activities, [...selectedListItems]);
 
     let md_check = document.getElementById("md-check");
@@ -138,12 +254,22 @@ makeChecklistEl.addEventListener('click', () => {
         console.debug(checklistText);
     }
 
-    navigator.clipboard.writeText(checklistText).then(() => {
+    switchToViewMode(removedOverrideSuffix);
+
+    const copyPromise = navigator.clipboard
+        ? navigator.clipboard.writeText(checklistText)
+        : Promise.reject();
+
+    copyPromise.then(() => {
         makeChecklistEl.classList.remove('is-copied');
         void makeChecklistEl.offsetWidth;
         makeChecklistEl.classList.add('is-copied');
-    });
-})
+        makeChecklistEl.addEventListener('animationend', hideCombineButton, { once: true });
+        setTimeout(hideCombineButton, 1000);
+    }).catch(hideCombineButton);
+});
+
+closeViewEl.addEventListener('click', switchToListMode);
 
 const onListItemClick = listItemEl => {
     const itemId = listItemEl.getAttribute('x-id');
