@@ -55,25 +55,39 @@ class User:
         'unedited': True,
         'activities': [
             {
-                'name': 'Example Activities',
+                'name': 'Evening out',
                 'items': [
-                    'Regular Item',
-                    'Optional Item?'
+                    'Wallet',
+                    'Phone',
+                    'Keys',
+                    'Jacket?'
                 ]
             },
             {
-                'name': 'Advanced Stuff',
+                'name': 'Staying overnight',
                 'items': [
-                    '-Remove Item',
-                    'Prevent Item Getting Removed!!',
-                    '~Reference Another Activity'
+                    'Toothbrush',
+                    'Pyjamas',
+                    'Change of clothes',
+                    'Phone charger'
                 ]
             },
             {
-                'name': 'Reference Another Activity',
+                'name': 'Hiking',
                 'items': [
-                    'Using the tilde ~ symbol',
-                    'See example in Advanced Stuff'
+                    'Walking shoes',
+                    'Water bottle',
+                    'Snacks',
+                    'Rain jacket?'
+                ]
+            },
+            {
+                'name': 'Car trip',
+                'items': [
+                    'Driving licence',
+                    'Sunglasses',
+                    'Snacks?',
+                    'Phone charger'
                 ]
             }
         ]

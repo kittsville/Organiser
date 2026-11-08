@@ -6,6 +6,7 @@ const editWrapperEl = document.getElementById('edit-wrapper');
 const editableActivitiesEl = document.getElementById('editable-activities');
 const editableActivitiesWrapperEl = document.getElementById('editable-activities-wrapper');
 const helpTextEl = document.getElementById('help-text');
+const exampleBannerEl = document.getElementById('example-banner');
 const editorButtonsEl = document.getElementById('editor-buttons');
 const cancelEl = document.getElementById('cancel');
 const saveEl = document.getElementById('save');
@@ -63,6 +64,9 @@ const switchToListMode = () => {
     clearCombinedList();
 
     helpTextEl.hidden = false;
+    if (exampleBannerEl) {
+        exampleBannerEl.hidden = !(userState && userState.unedited);
+    }
     listsWrapperEl.hidden = false;
     editWrapperEl.hidden = false;
     makeChecklistEl.hidden = selectedListItems.size < 1;
@@ -136,6 +140,9 @@ editEl.addEventListener('click', () => {
     listsWrapperEl.hidden = true;
     editWrapperEl.hidden = true;
     helpTextEl.hidden = true;
+    if (exampleBannerEl) {
+        exampleBannerEl.hidden = true;
+    }
     document.body.classList.add('edit-mode');
     document.body.classList.remove('view-mode');
 
@@ -219,6 +226,9 @@ const switchToViewMode = (items) => {
     listsWrapperEl.hidden = true;
     editWrapperEl.hidden = true;
     helpTextEl.hidden = true;
+    if (exampleBannerEl) {
+        exampleBannerEl.hidden = true;
+    }
     editorButtonsEl.hidden = true;
     editableActivitiesWrapperEl.hidden = true;
 
