@@ -70,6 +70,7 @@ def test_faq(client):
     assert b'Socks!!' in response.data
     assert b'Privacy' in response.data
     assert b'180 days' in response.data
+    assert b'https://headless.o.sci1.uk/' in response.data
 
 
 def test_not_found(client):
