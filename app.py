@@ -71,6 +71,11 @@ def homepage():
     return render_template('homepage.html')
 
 
+@app.route('/faq')
+def faq():
+    return render_template('faq.html')
+
+
 @app.route('/new')
 def new_user():
     user_key = UserKey.random()

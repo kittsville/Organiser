@@ -62,6 +62,16 @@ def test_homepage_shows_deployed_commit(flask_app, client):
     assert b'>abcdef</a>' in response.data
 
 
+def test_faq(client):
+    response = client.get('/faq')
+    assert response.status_code == 200
+    assert b'Explain more' in response.data
+    assert b'Advanced Logic' in response.data
+    assert b'Socks!!' in response.data
+    assert b'Privacy' in response.data
+    assert b'180 days' in response.data
+
+
 def test_not_found(client):
     response = client.get('/not-a-valid-user-id!!')
     assert response.status_code == 404

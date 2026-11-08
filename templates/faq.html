@@ -1,0 +1,53 @@
+{% extends "layout.html" %}
+{% block content %}
+<h2>Explain more</h2>
+<p>The idea is every big, scary, packing list is made up of several high level activities like "staying overnight" or "car trip". These activities are easier to think of and can be reused across multiple trips. For example, to visit a friend for the weekend you might select "staying overnight", "hiking" and "car trip". Organiser combines these lists, removes duplicates and applies any special rules you've defined.</p>
+
+<h2>Advanced Logic</h2>
+
+<p>You can add special rules for how lists are combined. Everything is done via text, like an old forum markup system:</p>
+
+<table>
+    <thead>
+        <tr>
+            <th>Syntax</th>
+            <th>Meaning</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><code>Socks</code></td>
+            <td>Required item</td>
+        </tr>
+        <tr>
+            <td><code>Socks?</code></td>
+            <td>Optional — dropped if <code>Socks</code> is also present</td>
+        </tr>
+        <tr>
+            <td><code>-Socks</code></td>
+            <td>Remove <code>Socks</code> / <code>Socks?</code> from the result</td>
+        </tr>
+        <tr>
+            <td><code>~List</code></td>
+            <td>Include all the items of an activity called "List" (recursive)</td>
+        </tr>
+        <tr>
+            <td><code>~List?</code></td>
+            <td>Same, but every included item becomes optional</td>
+        </tr>
+        <tr>
+            <td><code>-~List</code></td>
+            <td>Remove that activity’s items from the result</td>
+        </tr>
+        <tr>
+            <td><code>Socks!!</code></td>
+            <td>Keep even if <code>-Socks</code> is present (<code>!!</code> stripped in output)</td>
+        </tr>
+    </tbody>
+</table>
+
+<p>Exact duplicates are removed. Missing <code>~</code> references are left as-is.</p>
+
+<h2>Privacy</h2>
+<p>Users inactive for 180 days are deleted.</p>
+{% endblock %}
