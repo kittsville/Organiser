@@ -116,7 +116,8 @@ def test_activities_page(client, user_key):
         f'/{user_key.base64_uuid()}?key={user_key.base64_encrpytion_key()}'
     )
     assert response.status_code == 200
-    assert str(user_key.uuid).encode() in response.data
+    assert b'Loading your lists...' in response.data
+    assert b'Edit Activities' in response.data
 
 
 def test_activities_invalid_key(client, user_key):
