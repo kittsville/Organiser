@@ -7,6 +7,7 @@ const editableActivitiesEl = document.getElementById('editable-activities');
 const editableActivitiesWrapperEl = document.getElementById('editable-activities-wrapper');
 const helpTextEl = document.getElementById('help-text');
 const exampleBannerEl = document.getElementById('example-banner');
+const lastEditedEl = document.getElementById('last-edited');
 const editorButtonsEl = document.getElementById('editor-buttons');
 const cancelEl = document.getElementById('cancel');
 const saveEl = document.getElementById('save');
@@ -65,8 +66,9 @@ const switchToListMode = () => {
 
     helpTextEl.hidden = false;
     if (exampleBannerEl) {
-        exampleBannerEl.hidden = !(userState && userState.unedited);
+        exampleBannerEl.hidden = headless || !(userState && userState.unedited);
     }
+    updateLastEdited();
     listsWrapperEl.hidden = false;
     editWrapperEl.hidden = false;
     makeChecklistEl.hidden = selectedListItems.size < 1;
@@ -74,6 +76,24 @@ const switchToListMode = () => {
 
     document.body.removeEventListener('keyup', cancelEditWithEscape);
     document.body.removeEventListener('keyup', closeViewWithEscape);
+};
+
+const formatLastEdited = updatedAt => {
+    const formatted = new Intl.DateTimeFormat(undefined, {
+        dateStyle: 'medium',
+        timeStyle: 'short',
+    }).format(new Date(updatedAt * 1000));
+    return `Last edited ${formatted}`;
+};
+
+const updateLastEdited = () => {
+    if (!lastEditedEl || headless) {
+        return;
+    }
+
+    const show = Boolean(userState && !userState.unedited && userState.updatedAt);
+    lastEditedEl.hidden = !show;
+    lastEditedEl.textContent = show ? formatLastEdited(userState.updatedAt) : '';
 };
 
 const deselectAllActivities = () =>
@@ -337,6 +357,7 @@ addEventListener('DOMContentLoaded', () => {
         handleNewUserState({
             activities: [],
             updatedAt: (Date.now() / 1000),
+            unedited: true,
             version: 1
         });
         editEl.click();
