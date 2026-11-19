@@ -285,6 +285,7 @@ makeChecklistEl.addEventListener('click', () => {
     }
 
     switchToViewMode(removedOverrideSuffix);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
 
     const copyPromise = navigator.clipboard
         ? navigator.clipboard.writeText(checklistText)
