@@ -19,6 +19,7 @@ const headless = listsWrapperEl.classList.contains("headless");
 let userState = null;
 let previousActivityText = null;
 let combinedList = null;
+let activeCategoryKey = null;
 const selectedListItems = new Set();
 
 const url = new URL(location);
@@ -33,7 +34,8 @@ if (localDebug) {
 const handleServerError = error => alert(`Updating activity list failed: ${error}`);
 const handleNewUserState = user => {
     userState = user;
-    renderListsSummary(user.activities);
+    userState.activities = userState.activities.map(normalizeActivity);
+    renderListsSummary(userState.activities);
     switchToListMode();
 };
 
@@ -118,9 +120,18 @@ saveEl.addEventListener('click', () => {
             alert(error);
             throw error;
         }
+        const parsedTitle = parseActivityTitle(parsedItems[0]);
+        if (!parsedTitle.name) {
+            const error = `Activity is missing a name: ${rawItems}`;
+            alert(error);
+            throw error;
+        }
         const activity = {
-            name: parsedItems[0],
+            name: parsedTitle.name,
             items: parsedItems.slice(1)
+        };
+        if (parsedTitle.categories.length > 0) {
+            activity.categories = parsedTitle.categories;
         }
 
         return activity;
@@ -166,7 +177,7 @@ editEl.addEventListener('click', () => {
     document.body.classList.add('edit-mode');
     document.body.classList.remove('view-mode');
 
-    const activitiesAsText = userState.activities.map(item => item.name + '\n' + item.items.join('\n')).join('\n\n');
+    const activitiesAsText = userState.activities.map(item => formatActivityTitle(item) + '\n' + item.items.join('\n')).join('\n\n');
 
     previousActivityText = activitiesAsText;
     editorButtonsEl.hidden = false;
@@ -326,13 +337,74 @@ const onListItemClick = listItemEl => {
     makeChecklistEl.hidden = selectedListItems.size < 1;
 };
 
-const renderListsSummary = (listItems) => {
-    const listItemEls = listItems.map((item, i) => {
-        const tabindex = i === 0 ? 'tabindex="0"' :'';
+const applyActivityFilters = () => {
+    const searchInput = document.getElementById('search');
+    const searchQuery = searchInput ? searchInput.value.trim().toLowerCase() : '';
 
+    listsWrapperEl.querySelectorAll('li').forEach(item => {
+        const keys = (item.dataset.categories || '').split('\n').filter(Boolean);
+        const hideCategory = Boolean(activeCategoryKey) && !keys.includes(activeCategoryKey);
+        const primaryText = item.querySelector('.mdc-list-item__primary-text').textContent.toLowerCase();
+        const secondaryText = item.querySelector('.mdc-list-item__secondary-text').textContent.toLowerCase();
+        const hideSearch = Boolean(searchQuery)
+            && !primaryText.includes(searchQuery)
+            && !secondaryText.includes(searchQuery);
+        item.classList.toggle('is-category-hidden', hideCategory);
+        item.classList.toggle('is-search-hidden', hideSearch);
+    });
+};
+window.applyActivityFilters = applyActivityFilters;
+
+const renderCategoryTabs = (categoryNames) => {
+    if (categoryNames.length === 0) {
+        return null;
+    }
+
+    const tabs = document.createElement('div');
+    tabs.className = 'category-tabs';
+    tabs.setAttribute('role', 'tablist');
+    tabs.setAttribute('aria-label', 'Activity categories');
+
+    const addTab = (label, key) => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'category-tab';
+        button.setAttribute('role', 'tab');
+        button.dataset.categoryKey = key || '';
+        button.textContent = label;
+        button.setAttribute('aria-selected', String((activeCategoryKey || '') === (key || '')));
+        button.addEventListener('click', () => {
+            activeCategoryKey = key;
+            tabs.querySelectorAll('.category-tab').forEach(tab => {
+                tab.setAttribute('aria-selected', String(tab.dataset.categoryKey === (key || '')));
+            });
+            applyActivityFilters();
+        });
+        tabs.appendChild(button);
+    };
+
+    addTab('All', null);
+    categoryNames.forEach(name => addTab(name, categoryKey(name)));
+    return tabs;
+};
+
+const renderListsSummary = (listItems) => {
+    const categoryNames = canonicalCategoryNames(listItems);
+    if (activeCategoryKey && !categoryNames.some(name => categoryKey(name) === activeCategoryKey)) {
+        activeCategoryKey = null;
+    }
+
+    const listItemEls = listItems.map((item, i) => {
         const listItemEl = listItemTemplateEl.content.cloneNode(true).querySelector('li');
         if (i === 0) {listItemEl.tabIndex = 0;}
         listItemEl.setAttribute('x-id', item.name);
+        if (selectedListItems.has(item.name)) {
+            listItemEl.classList.add('selected');
+        }
+        const keys = (item.categories || []).map(categoryKey);
+        if (keys.length > 0) {
+            listItemEl.dataset.categories = keys.join('\n');
+        }
 
         listItemEl.querySelector('.mdc-list-item__primary-text').textContent = item.name;
         listItemEl.querySelector('.mdc-list-item__secondary-text').textContent = item.items.join(', ');
@@ -344,14 +416,19 @@ const renderListsSummary = (listItems) => {
     listEl.classList.add('mdc-list', 'mdc-list--two-line');
     listItemEls.forEach(el => listEl.appendChild(el));
 
-    listsWrapperEl.innerHTML = '';
+    listsWrapperEl.replaceChildren();
+    const tabs = renderCategoryTabs(categoryNames);
+    if (tabs) {
+        listsWrapperEl.appendChild(tabs);
+    }
     listsWrapperEl.appendChild(listEl);
-    const list = new mdc.list.MDCList(listsWrapperEl.firstElementChild);
+    const list = new mdc.list.MDCList(listEl);
     list.listElements.forEach(mdc.ripple.MDCRipple.attachTo);
 
-    Array.from(listsWrapperEl.firstElementChild.children).forEach(listItemEl =>
+    Array.from(listEl.children).forEach(listItemEl =>
         listItemEl.addEventListener('click', () => onListItemClick(listItemEl))
     );
+    applyActivityFilters();
 }
 
 const renderLoadError = (message) => {

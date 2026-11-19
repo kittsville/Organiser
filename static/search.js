@@ -21,20 +21,9 @@
         }
     }, 250);
 
-    inputEl.addEventListener('input', ev => {
-        const searchQuery = ev.target.value.trim().toLowerCase();
-
-        getActivityListItems().forEach(item => {
-            const primaryText = item.querySelector('.mdc-list-item__primary-text').textContent.toLowerCase();
-            const secondaryText = item.querySelector('.mdc-list-item__secondary-text').textContent.toLowerCase();
-
-            const displayItem = primaryText.includes(searchQuery) || secondaryText.includes(searchQuery);
-
-            if (displayItem) {
-                item.style.display = null;
-            } else {
-                item.style.display = "none";
-            }
-        });
+    inputEl.addEventListener('input', () => {
+        if (typeof window.applyActivityFilters === 'function') {
+            window.applyActivityFilters();
+        }
     });
 })();

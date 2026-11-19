@@ -17,7 +17,7 @@ jobs:
         node-version: 'lts/*'
     - run: pip install -r requirements.txt
     - run: pytest
-    - run: node --test test_checklist.js
+    - run: node --test test_checklist.js test_categories.js
     - name: Trigger Coolify Deployment
       env:
         COOLIFY_TOKEN: ${{ secrets.COOLIFY_TOKEN }}
