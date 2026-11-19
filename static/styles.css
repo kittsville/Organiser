@@ -54,6 +54,34 @@ body {
   border-radius: 24px;
 }
 
+.copy-banner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 20;
+  padding: 0.85em 1em;
+  text-align: center;
+  background-color: #018786;
+  color: #fff;
+  font-weight: 500;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.4s ease, visibility 0.4s ease;
+}
+
+.copy-banner.is-visible {
+  opacity: 1;
+  visibility: visible;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .copy-banner {
+    transition: none;
+  }
+}
+
 #editable-activities-wrapper {
   margin-bottom: 0.5em;
 }

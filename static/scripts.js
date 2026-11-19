@@ -267,6 +267,22 @@ const hideCombineButton = () => {
     }
 };
 
+let copyBannerTimer = null;
+
+const showCopiedBanner = () => {
+    const banner = document.getElementById('copy-banner');
+    if (!banner) {
+        return;
+    }
+
+    banner.classList.remove('is-visible');
+    void banner.offsetWidth;
+    banner.classList.add('is-visible');
+
+    clearTimeout(copyBannerTimer);
+    copyBannerTimer = setTimeout(() => banner.classList.remove('is-visible'), 2000);
+};
+
 makeChecklistEl.addEventListener('click', () => {
     if (document.body.classList.contains('view-mode')) {
         return;
@@ -291,7 +307,7 @@ makeChecklistEl.addEventListener('click', () => {
         ? navigator.clipboard.writeText(checklistText)
         : Promise.reject();
 
-    copyPromise.finally(hideCombineButton);
+    copyPromise.then(showCopiedBanner).catch(() => {}).finally(hideCombineButton);
 });
 
 closeViewEl.addEventListener('click', switchToListMode);
