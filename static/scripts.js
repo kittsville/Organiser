@@ -290,13 +290,7 @@ makeChecklistEl.addEventListener('click', () => {
         ? navigator.clipboard.writeText(checklistText)
         : Promise.reject();
 
-    copyPromise.then(() => {
-        makeChecklistEl.classList.remove('is-copied');
-        void makeChecklistEl.offsetWidth;
-        makeChecklistEl.classList.add('is-copied');
-        makeChecklistEl.addEventListener('animationend', hideCombineButton, { once: true });
-        setTimeout(hideCombineButton, 1000);
-    }).catch(hideCombineButton);
+    copyPromise.finally(hideCombineButton);
 });
 
 closeViewEl.addEventListener('click', switchToListMode);
