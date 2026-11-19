@@ -343,7 +343,7 @@ const applyActivityFilters = () => {
 
     listsWrapperEl.querySelectorAll('li').forEach(item => {
         const keys = (item.dataset.categories || '').split('\n').filter(Boolean);
-        const hideCategory = Boolean(activeCategoryKey) && !keys.includes(activeCategoryKey);
+        const hideCategory = !matchesCategoryTab(keys, activeCategoryKey);
         const primaryText = item.querySelector('.mdc-list-item__primary-text').textContent.toLowerCase();
         const secondaryText = item.querySelector('.mdc-list-item__secondary-text').textContent.toLowerCase();
         const hideSearch = Boolean(searchQuery)

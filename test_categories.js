@@ -5,6 +5,8 @@ const {
     formatActivityTitle,
     canonicalCategoryNames,
     normalizeActivity,
+    categoryKey,
+    matchesCategoryTab,
 } = require('./static/categories.js');
 
 describe('parseActivityTitle', () => {
@@ -71,6 +73,27 @@ describe('formatActivityTitle', () => {
 
     it('leaves an uncategorised activity name unchanged', () => {
         assert.equal(formatActivityTitle({ name: 'Picnic' }), 'Picnic');
+    });
+});
+
+describe('matchesCategoryTab', () => {
+    const keysFor = (...categories) => categories.map(categoryKey);
+
+    it('keeps a Hidden activity out of All', () => {
+        const keys = keysFor('Hidden', 'Events');
+        assert.equal(matchesCategoryTab(keys, null), false);
+        assert.equal(matchesCategoryTab(keys, 'hidden'), true);
+        assert.equal(matchesCategoryTab(keys, 'events'), true);
+    });
+
+    it('treats any capitalisation of Hidden as the same category', () => {
+        assert.equal(matchesCategoryTab(keysFor('HIDDEN'), null), false);
+        assert.equal(matchesCategoryTab(keysFor('hidden'), 'hidden'), true);
+    });
+
+    it('leaves other activities in All', () => {
+        assert.equal(matchesCategoryTab(keysFor('Events'), null), true);
+        assert.equal(matchesCategoryTab([], null), true);
     });
 });
 

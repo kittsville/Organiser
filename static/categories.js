@@ -57,6 +57,16 @@ const formatActivityTitle = (activity) => {
     return `${activity.name} :${categories.join(' :')}`;
 };
 
+const HIDDEN_CATEGORY_KEY = categoryKey('Hidden');
+
+const matchesCategoryTab = (categoryKeys, activeCategoryKey) => {
+    const keys = categoryKeys || [];
+    if (!activeCategoryKey) {
+        return !keys.includes(HIDDEN_CATEGORY_KEY);
+    }
+    return keys.includes(activeCategoryKey);
+};
+
 const canonicalCategoryNames = (activities) => {
     const order = [];
     const best = new Map();
@@ -104,6 +114,7 @@ if (typeof module !== 'undefined' && module.exports) {
         canonicalCategoryNames,
         normalizeActivity,
         categoryKey,
+        matchesCategoryTab,
     };
 } else if (typeof window !== 'undefined') {
     window.parseActivityTitle = parseActivityTitle;
@@ -111,4 +122,5 @@ if (typeof module !== 'undefined' && module.exports) {
     window.canonicalCategoryNames = canonicalCategoryNames;
     window.normalizeActivity = normalizeActivity;
     window.categoryKey = categoryKey;
+    window.matchesCategoryTab = matchesCategoryTab;
 }
